@@ -842,10 +842,13 @@ export class GameEngine3D {
     const classDef = PLAYER_CLASSES.find((c) => c.id === character.classId) || PLAYER_CLASSES[0];
     character.stats.abilityCooldown = classDef.ability.cooldown;
 
-    // Trigger powerful right-arm forward cast / strike animation for all abilities
-    character.triggerPunch('titan');
-
     const classId = character.classId;
+    // Trigger bespoke ability animation (Shield block, staff sky pulse, flame blast, axe cleave, spear dash, mine plant)
+    character.triggerAbilityAnimation(classId);
+    if (classId === 'brawler') {
+      character.triggerPunch('titan');
+    }
+
     const charPos = character.group.position.clone();
     if (character.isPlayer) {
       this.onPlayerFeat?.('class_ability', 1);

@@ -61,9 +61,20 @@ export class Character3D {
   public onShieldBreakEvent?: () => void;
   public onReflectEvent?: (otherName: string, isReflector: boolean) => void;
 
+  // Ability Animation States
+  public isCastingAbility: boolean = false;
+  public abilityAnimProgress: number = 0;
+  public abilityCastType: string = '';
+
   // Animation Timers
   private walkCycle: number = 0;
   private particles: ParticleSystem3D;
+
+  public triggerAbilityAnimation(type: string) {
+    this.isCastingAbility = true;
+    this.abilityAnimProgress = 0;
+    this.abilityCastType = type;
+  }
 
   constructor(
     isPlayer: boolean,
@@ -431,19 +442,7 @@ export class Character3D {
     // --- ARMS: Fiery Molten Staff (Right) & Floating Fireball (Left) ---
     const armGeo = new THREE.BoxGeometry(0.2, 0.36, 0.2);
 
-    // RIGHT ARM + Molten Fire Staff
-    this.rightArmMesh = new THREE.Group();
-    this.rightArmMesh.position.set(0.48, 0.88, 0);
-    const rightArm = new THREE.Mesh(armGeo, tunicMat);
-    rightArm.position.set(0, -0.14, 0);
-    const handR = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.16, 0.18), skinMat);
-    handR.position.set(0, -0.36, 0.08);
-
-    const fireStaff = this.createFireStaffMesh(woodMat, flameCoreMat, flameOrangeMat);
-    fireStaff.position.set(0.08, -0.35, 0.15);
-    this.rightArmMesh.add(rightArm, handR, fireStaff);
-
-    // LEFT ARM + Floating Flame Sphere
+    // LEFT ARM + Molten Fire Staff
     this.leftArmMesh = new THREE.Group();
     this.leftArmMesh.position.set(-0.48, 0.88, 0.05);
     const leftArm = new THREE.Mesh(armGeo, tunicMat);
@@ -451,13 +450,18 @@ export class Character3D {
     const handL = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.16, 0.18), skinMat);
     handL.position.set(0, -0.36, 0.08);
 
-    const fireball = new THREE.Mesh(new THREE.OctahedronGeometry(0.1, 0), flameCoreMat);
-    fireball.position.set(0, 0.18, 0.08);
-    const flameHalo = new THREE.Mesh(new THREE.DodecahedronGeometry(0.14, 0), flameOrangeMat);
-    flameHalo.position.set(0, 0.18, 0.08);
-    handL.add(fireball, flameHalo);
+    const fireStaff = this.createFireStaffMesh(woodMat, flameCoreMat, flameOrangeMat);
+    fireStaff.position.set(-0.08, -0.35, 0.15);
+    this.leftArmMesh.add(leftArm, handL, fireStaff);
 
-    this.leftArmMesh.add(leftArm, handL);
+    // RIGHT ARM + Casting Hand (with fiery glow)
+    this.rightArmMesh = new THREE.Group();
+    this.rightArmMesh.position.set(0.48, 0.88, 0);
+    const rightArm = new THREE.Mesh(armGeo, tunicMat);
+    rightArm.position.set(0, -0.14, 0);
+    const handR = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.16, 0.18), skinMat);
+    handR.position.set(0, -0.36, 0.08);
+    this.rightArmMesh.add(rightArm, handR);
 
     // --- LEGS & BOOTS ---
     const legGeo = new THREE.BoxGeometry(0.22, 0.26, 0.22);
@@ -573,22 +577,7 @@ export class Character3D {
 
     this.bodyMesh.add(coat, icePauldronL, iceSpike, pauldronR, belt, buckle, potGroup, keyS, pouch, cloak, hem);
 
-    // --- ARMS: Giant Crystal Glacial Battle Axe (Right) & Floating Snowflake Orb (Left) ---
-    const armGeo = new THREE.BoxGeometry(0.2, 0.36, 0.2);
-
-    // RIGHT ARM + Massive Glacial Crystal Axe
-    this.rightArmMesh = new THREE.Group();
-    this.rightArmMesh.position.set(0.48, 0.88, 0);
-    const rightArm = new THREE.Mesh(armGeo, tunicMat);
-    rightArm.position.set(0, -0.14, 0);
-    const handR = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.16, 0.18), skinMat);
-    handR.position.set(0, -0.36, 0.08);
-
-    const frostAxe = this.createFrostAxeMesh(new THREE.MeshLambertMaterial({ color: 0x3f1d0b }), iceMat, frostMat);
-    frostAxe.position.set(0.1, -0.35, 0.15);
-    this.rightArmMesh.add(rightArm, handR, frostAxe);
-
-    // LEFT ARM + Floating Frost Snowflake Sphere
+    // LEFT ARM + Massive Glacial Crystal Axe
     this.leftArmMesh = new THREE.Group();
     this.leftArmMesh.position.set(-0.48, 0.88, 0.05);
     const leftArm = new THREE.Mesh(armGeo, tunicMat);
@@ -596,11 +585,18 @@ export class Character3D {
     const handL = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.16, 0.18), skinMat);
     handL.position.set(0, -0.36, 0.08);
 
-    const frostOrb = new THREE.Mesh(new THREE.OctahedronGeometry(0.12, 0), iceMat);
-    frostOrb.position.set(0, 0.18, 0.08);
-    handL.add(frostOrb);
+    const frostAxe = this.createFrostAxeMesh(new THREE.MeshLambertMaterial({ color: 0x3f1d0b }), iceMat, frostMat);
+    frostAxe.position.set(-0.1, -0.35, 0.15);
+    this.leftArmMesh.add(leftArm, handL, frostAxe);
 
-    this.leftArmMesh.add(leftArm, handL);
+    // RIGHT ARM + Casting Hand (with frost aura)
+    this.rightArmMesh = new THREE.Group();
+    this.rightArmMesh.position.set(0.48, 0.88, 0);
+    const rightArm = new THREE.Mesh(armGeo, tunicMat);
+    rightArm.position.set(0, -0.14, 0);
+    const handR = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.16, 0.18), skinMat);
+    handR.position.set(0, -0.36, 0.08);
+    this.rightArmMesh.add(rightArm, handR);
 
     // --- LEGS & FUR BOOTS ---
     const legGeo = new THREE.BoxGeometry(0.22, 0.26, 0.22);
@@ -724,22 +720,7 @@ export class Character3D {
 
     this.bodyMesh.add(cuirass, pauldronL, pauldronR, belt, buckle, batteryCell, scabbard, cloak);
 
-    // --- ARMS: Crackling Lightning Spear (Right) & Pulsating Volt Orb (Left) ---
-    const armGeo = new THREE.BoxGeometry(0.2, 0.36, 0.2);
-
-    // RIGHT ARM + Crackling Lightning Spear
-    this.rightArmMesh = new THREE.Group();
-    this.rightArmMesh.position.set(0.48, 0.88, 0);
-    const rightArm = new THREE.Mesh(armGeo, suitMat);
-    rightArm.position.set(0, -0.14, 0);
-    const gauntletR = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.2, 0.24), suitMat);
-    gauntletR.position.set(0, -0.32, 0);
-
-    const lightningSpear = this.createLightningSpearMesh(voltMat, new THREE.MeshBasicMaterial({ color: 0xffffff }));
-    lightningSpear.position.set(0.08, -0.35, 0.15);
-    this.rightArmMesh.add(rightArm, gauntletR, lightningSpear);
-
-    // LEFT ARM + Pulsating Volt Spark Orb
+    // LEFT ARM + Crackling Lightning Spear
     this.leftArmMesh = new THREE.Group();
     this.leftArmMesh.position.set(-0.48, 0.88, 0.05);
     const leftArm = new THREE.Mesh(armGeo, suitMat);
@@ -747,11 +728,18 @@ export class Character3D {
     const gauntletL = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.2, 0.24), suitMat);
     gauntletL.position.set(0, -0.32, 0);
 
-    const voltOrb = new THREE.Mesh(new THREE.DodecahedronGeometry(0.12, 0), voltMat);
-    voltOrb.position.set(0, 0.18, 0.08);
-    gauntletL.add(voltOrb);
+    const lightningSpear = this.createLightningSpearMesh(voltMat, new THREE.MeshBasicMaterial({ color: 0xffffff }));
+    lightningSpear.position.set(-0.08, -0.35, 0.15);
+    this.leftArmMesh.add(leftArm, gauntletL, lightningSpear);
 
-    this.leftArmMesh.add(leftArm, gauntletL);
+    // RIGHT ARM + Casting Hand
+    this.rightArmMesh = new THREE.Group();
+    this.rightArmMesh.position.set(0.48, 0.88, 0);
+    const rightArm = new THREE.Mesh(armGeo, suitMat);
+    rightArm.position.set(0, -0.14, 0);
+    const gauntletR = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.2, 0.24), suitMat);
+    gauntletR.position.set(0, -0.32, 0);
+    this.rightArmMesh.add(rightArm, gauntletR);
 
     // --- LEGS: Cyber Shin Armor with Neon Volt Lines & Shinobi Boots ---
     const legGeo = new THREE.BoxGeometry(0.22, 0.26, 0.22);
@@ -948,19 +936,7 @@ export class Character3D {
     // --- ARMS: Singularity Staff (Right) & Telekinetic Orbiting Meteorites (Left) ---
     const armGeo = new THREE.BoxGeometry(0.2, 0.36, 0.2);
 
-    // RIGHT ARM + Ancient Singularity Staff (Exclusively on right hand)
-    this.rightArmMesh = new THREE.Group();
-    this.rightArmMesh.position.set(0.48, 0.88, 0);
-    const rightArm = new THREE.Mesh(armGeo, robeMat);
-    rightArm.position.set(0, -0.14, 0);
-    const handR = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.16, 0.18), skinMat);
-    handR.position.set(0, -0.36, 0.08);
-
-    const staffGroup = this.createSingularityStaff(woodMat, vortexMat, blackHoleMat, rockMat);
-    staffGroup.position.set(0.08, -0.35, 0.15);
-    this.rightArmMesh.add(rightArm, handR, staffGroup);
-
-    // LEFT ARM (Natural casting hand, without any extra objects)
+    // LEFT ARM + Ancient Singularity Staff
     this.leftArmMesh = new THREE.Group();
     this.leftArmMesh.position.set(-0.48, 0.88, 0.05);
     const leftArm = new THREE.Mesh(armGeo, robeMat);
@@ -968,7 +944,18 @@ export class Character3D {
     const handL = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.16, 0.18), skinMat);
     handL.position.set(0, -0.36, 0.08);
 
-    this.leftArmMesh.add(leftArm, handL);
+    const staffGroup = this.createSingularityStaff(woodMat, vortexMat, blackHoleMat, rockMat);
+    staffGroup.position.set(-0.08, -0.35, 0.15);
+    this.leftArmMesh.add(leftArm, handL, staffGroup);
+
+    // RIGHT ARM (Casting hand with subtle cosmic sparks)
+    this.rightArmMesh = new THREE.Group();
+    this.rightArmMesh.position.set(0.48, 0.88, 0);
+    const rightArm = new THREE.Mesh(armGeo, robeMat);
+    rightArm.position.set(0, -0.14, 0);
+    const handR = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.16, 0.18), skinMat);
+    handR.position.set(0, -0.36, 0.08);
+    this.rightArmMesh.add(rightArm, handR);
 
     // --- LEGS & WIZARD BOOTS ---
     const legGeo = new THREE.BoxGeometry(0.22, 0.26, 0.22);
@@ -1739,11 +1726,13 @@ export class Character3D {
     return group;
   }
 
-  // Build the 3D Pixel Steal Glove attached to right fist
+  // Build the 3D Pixel Steal Glove attached to fist (for Brawler or active item)
   private buildGlove() {
     this.gloveMesh = this.createGloveMesh(new THREE.Color(this.stats.color), true);
     this.gloveMesh.position.set(0, -0.55, 0.12);
-    this.rightArmMesh.add(this.gloveMesh);
+    if (this.stats.classId === 'brawler') {
+      this.rightArmMesh.add(this.gloveMesh);
+    }
   }
 
   // Build Golden Home-Run Bat
@@ -1996,7 +1985,59 @@ export class Character3D {
       this.particles.createSparkles(gloveWorldPos, '#06b6d4');
     }
 
-    // 2. Right Arm Weapon Strike / Ability Cast Animation
+    // 2. Iron Guardian Shield Block Stance (When Reflect Shield is active)
+    const isIronShielding = this.stats.hasReflectShield && this.stats.classId === 'iron_guardian';
+    if (isIronShielding) {
+      // Bring Kite Shield directly in front of body covering chest and head
+      this.leftArmMesh.position.set(0.08, 0.92, 0.48);
+      this.leftArmMesh.rotation.set(-1.25, 0.65, -0.3);
+    }
+
+    // 3. Dynamic Ability Cast Animation (Staves, Axe, Spear, Mines, Warps)
+    if (this.isCastingAbility) {
+      this.abilityAnimProgress += delta * 2.8;
+      const p = Math.min(1.0, this.abilityAnimProgress);
+      const curve = Math.sin(p * Math.PI);
+
+      if (this.abilityCastType === 'gravity_mage') {
+        // High staff raise + cosmic sky pulse
+        this.leftArmMesh.position.set(-0.48, 0.88 + curve * 0.45, curve * 0.25);
+        this.leftArmMesh.rotation.set(-curve * 2.2, 0, 0.3);
+      } else if (this.abilityCastType === 'pyro_fiend') {
+        // Dual forward inferno stream
+        this.leftArmMesh.position.set(-0.25, 0.95, curve * 0.65);
+        this.leftArmMesh.rotation.set(-curve * 1.4, 0.2, 0);
+        this.rightArmMesh.position.set(0.25, 0.95, curve * 0.55);
+        this.rightArmMesh.rotation.set(-curve * 1.4, -0.2, 0);
+      } else if (this.abilityCastType === 'frost_valkyrie') {
+        // Overhead Glacial Axe cleave
+        this.leftArmMesh.position.set(-0.35, 0.88 + curve * 0.4, curve * 0.55);
+        this.leftArmMesh.rotation.set(-curve * 1.8, 0, 0.3);
+      } else if (this.abilityCastType === 'cyber_ninja') {
+        // High-voltage lightning spear dash thrust
+        this.leftArmMesh.position.set(-0.2, 0.95, curve * 0.85);
+        this.leftArmMesh.rotation.set(-curve * 1.5, 0, 0);
+      } else if (this.abilityCastType === 'trapster') {
+        // Detonator plunge & mine plant
+        this.rightArmMesh.position.set(0.3, 0.55, curve * 0.45);
+        this.rightArmMesh.rotation.set(-curve * 1.3, 0, 0);
+      }
+
+      if (this.abilityAnimProgress >= 1.0) {
+        this.isCastingAbility = false;
+        this.abilityAnimProgress = 0;
+        if (!isIronShielding) {
+          this.leftArmMesh.position.set(-0.48, 0.88, 0.05);
+          this.leftArmMesh.rotation.set(0, 0, 0);
+        }
+        if (!this.isPunching) {
+          this.rightArmMesh.position.set(0.48, 0.88, 0);
+          this.rightArmMesh.rotation.set(0, 0, 0);
+        }
+      }
+    }
+
+    // 4. Right Arm Weapon Strike / Punch Animation
     if (this.isPunching) {
       this.punchAnimProgress += delta * (this.punchType === 'titan' ? 2.6 : 3.8);
       if (this.punchAnimProgress >= 1.0) {
@@ -2041,19 +2082,22 @@ export class Character3D {
       }
     }
 
-    // 3. Strategic Slower Movement & Walk Cycle (Locked if frozen)
+    // 5. Strategic Slower Movement & Walk Cycle (Locked if frozen)
     const horizSpeed = Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.z * this.velocity.z);
-    if (horizSpeed > 0.2 && this.isGrounded && !this.isPunching && !this.isFrozen) {
+    if (horizSpeed > 0.2 && this.isGrounded && !this.isPunching && !this.isFrozen && !this.isCastingAbility) {
       this.walkCycle += delta * horizSpeed * 3.2;
       const legSwing = Math.sin(this.walkCycle) * 0.4;
       this.leftLegMesh.rotation.x = legSwing;
       this.rightLegMesh.rotation.x = -legSwing;
-      this.leftArmMesh.rotation.x = -legSwing * 0.5;
+      if (!isIronShielding) {
+        this.leftArmMesh.rotation.x = -legSwing * 0.5;
+      }
       this.headMesh.position.y = 1.45 + Math.abs(Math.sin(this.walkCycle * 2)) * 0.05;
-    } else if (!this.isPunching) {
+    } else if (!this.isPunching && !this.isCastingAbility && !isIronShielding) {
       this.leftLegMesh.rotation.x = 0;
       this.rightLegMesh.rotation.x = 0;
       this.leftArmMesh.rotation.x = 0;
+      this.leftArmMesh.position.set(-0.48, 0.88, 0.05);
       this.headMesh.position.y = 1.45;
     }
 
