@@ -96,7 +96,7 @@ export class GameEngine3D {
   public onPlayerEliminated: ((killerStats: PlayerStats | null, killerBanner: KillBanner | null) => void) | null = null;
   public onKillElimination: ((event: EliminationEvent) => void) | null = null;
   public onSpectateTargetChange: ((targetStats: PlayerStats) => void) | null = null;
-  public onPauseRequested: (() => void) | null = null;
+  public onPointerLockExit: (() => void) | null = null;
   public cameraSensitivityMultiplier: number = 1.0;
 
   // Animation Frame & Clock
@@ -198,6 +198,11 @@ export class GameEngine3D {
 
   private handlePointerLockChange = () => {
     this.isPointerLocked = document.pointerLockElement === this.canvas;
+    if (!this.isPointerLocked && this.isMatchRunning && !this.isPaused) {
+      if (this.onPointerLockExit) {
+        this.onPointerLockExit();
+      }
+    }
   };
 
   private handleKeyDown = (e: KeyboardEvent) => {

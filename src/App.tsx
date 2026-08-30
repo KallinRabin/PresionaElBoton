@@ -65,6 +65,7 @@ const STORAGE_KEY_PLAYER_NAME = 'roba_boton_player_name';
 export default function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<GameEngine3D | null>(null);
+  const handlePauseRef = useRef<() => void>(() => {});
 
   // Player Name State
   const [playerName, setPlayerName] = useState<string>(() => {
@@ -356,6 +357,10 @@ export default function App() {
       setIsEliminatedModalOpen(true);
     };
 
+    engine.onPointerLockExit = () => {
+      handlePauseRef.current();
+    };
+
     engine.onMatchEnd = (result) => {
       setIsEliminatedModalOpen(false);
       setIsSpectating(false);
@@ -517,6 +522,8 @@ export default function App() {
       setGameState('paused');
     }
   }, [gameState, isEliminatedModalOpen]);
+
+  handlePauseRef.current = handlePause;
 
   const handleResume = useCallback(() => {
     if (engineRef.current && gameState === 'paused') {
