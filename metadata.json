@@ -1,0 +1,8 @@
+{
+  "name": "Roba el Botón 3D - Pixel Art",
+  "description": "Juego de lucha estilo Smash 3D en tercera persona con cámara bloqueada, guante para robar dinero, empuje por porcentaje de daño, selección de clases con 1 habilidad táctica y objetos de combate.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

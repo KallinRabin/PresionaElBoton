@@ -1,0 +1,178 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Silkscreen', 'Press Start 2P', monospace;
+    image-rendering: pixelated;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+}
+
+/* Pixel Art Fonts */
+.font-pixel-heading {
+  font-family: 'Press Start 2P', cursive, monospace;
+}
+
+.font-pixel-body {
+  font-family: 'Silkscreen', monospace;
+}
+
+.font-pixel-condensed {
+  font-family: 'VT323', monospace;
+}
+
+/* Pixel Art Borders */
+.pixel-box {
+  border: 4px solid #000;
+  box-shadow: 
+    inset -4px -4px 0px 0px rgba(0, 0, 0, 0.4),
+    inset 4px 4px 0px 0px rgba(255, 255, 255, 0.3),
+    0 4px 0 0 #000;
+}
+
+.pixel-box-sm {
+  border: 3px solid #000;
+  box-shadow: 
+    inset -2px -2px 0px 0px rgba(0, 0, 0, 0.4),
+    inset 2px 2px 0px 0px rgba(255, 255, 255, 0.3),
+    0 3px 0 0 #000;
+}
+
+.pixel-box-gold {
+  border: 4px solid #78350f;
+  background: #f59e0b;
+  box-shadow: 
+    inset -4px -4px 0px 0px #b45309,
+    inset 4px 4px 0px 0px #fde68a,
+    0 5px 0 0 #451a03;
+}
+
+.pixel-box-red {
+  border: 4px solid #450a0a;
+  background: #ef4444;
+  box-shadow: 
+    inset -4px -4px 0px 0px #991b1b,
+    inset 4px 4px 0px 0px #fca5a5,
+    0 5px 0 0 #1e0404;
+}
+
+.pixel-box-blue {
+  border: 4px solid #082f49;
+  background: #0284c7;
+  box-shadow: 
+    inset -4px -4px 0px 0px #0369a1,
+    inset 4px 4px 0px 0px #7dd3fc,
+    0 5px 0 0 #031e33;
+}
+
+.pixel-box-green {
+  border: 4px solid #052e16;
+  background: #16a34a;
+  box-shadow: 
+    inset -4px -4px 0px 0px #15803d,
+    inset 4px 4px 0px 0px #86efac,
+    0 5px 0 0 #021a0c;
+}
+
+.pixel-box-purple {
+  border: 4px solid #2e1065;
+  background: #9333ea;
+  box-shadow: 
+    inset -4px -4px 0px 0px #7e22ce,
+    inset 4px 4px 0px 0px #d8b4fe,
+    0 5px 0 0 #1b063d;
+}
+
+.pixel-box-dark {
+  border: 4px solid #09090b;
+  background: #18181b;
+  box-shadow: 
+    inset -4px -4px 0px 0px #09090b,
+    inset 4px 4px 0px 0px #27272a,
+    0 4px 0 0 #000;
+}
+
+/* Pixel Button Click Behavior */
+.pixel-btn {
+  transition: transform 0.05s ease, filter 0.1s ease;
+  cursor: pointer;
+}
+
+.pixel-btn:hover {
+  filter: brightness(1.1);
+}
+
+.pixel-btn:active {
+  transform: translateY(3px);
+  box-shadow: 
+    inset -2px -2px 0px 0px rgba(0, 0, 0, 0.4),
+    inset 2px 2px 0px 0px rgba(255, 255, 255, 0.3),
+    0 1px 0 0 #000 !important;
+}
+
+/* Retro CRT / Scanline subtle effect (toggleable) */
+.scanlines {
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%, 
+    rgba(0, 0, 0, 0.35) 50%
+  ), linear-gradient(
+    90deg,
+    rgba(255, 0, 0, 0.05),
+    rgba(0, 255, 0, 0.02),
+    rgba(0, 0, 255, 0.05)
+  );
+  background-size: 100% 4px, 6px 100%;
+  box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.7);
+  pointer-events: none;
+}
+
+/* Text stroke for pixel art text readability */
+.pixel-text-stroke {
+  text-shadow: 
+    -2px -2px 0 #000,  
+     2px -2px 0 #000,
+    -2px  2px 0 #000,
+     2px  2px 0 #000,
+     0px  3px 0 #000,
+     3px  0px 0 #000;
+}
+
+.pixel-text-glow-gold {
+  text-shadow: 
+    -2px -2px 0 #451a03,  
+     2px -2px 0 #451a03,
+    -2px  2px 0 #451a03,
+     2px  2px 0 #451a03,
+     0 0 12px #fbbf24;
+}
+
+.pixel-text-glow-red {
+  text-shadow: 
+    -2px -2px 0 #450a0a,  
+     2px -2px 0 #450a0a,
+    -2px  2px 0 #450a0a,
+     2px  2px 0 #450a0a,
+     0 0 12px #ef4444;
+}
+
+/* Custom 8-bit blinking animation */
+@keyframes pixel-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+.animate-pixel-blink {
+  animation: pixel-blink 0.8s infinite;
+}
+
+@keyframes pixel-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.animate-pixel-float {
+  animation: pixel-float 2s steps(4, jump-none) infinite;
+}
+
