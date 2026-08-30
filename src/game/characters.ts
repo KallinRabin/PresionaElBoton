@@ -312,57 +312,218 @@ export class Character3D {
   }
 
   private buildMesh() {
-    const mainColor = new THREE.Color(this.stats.color);
-    const headColor = new THREE.Color(this.skin.headColor);
-    const bodyColor = new THREE.Color(this.skin.bodyColor);
-    const detailColor = new THREE.Color(this.skin.detailColor);
+    const fighterColor = new THREE.Color(this.stats.color);
+    const skinToneColor = new THREE.Color('#e8b188'); // Warm retro pixel boxer skin tone
+    const hairColor = new THREE.Color(this.skin.headColor || '#452613');
+    const shortsColor = new THREE.Color(this.skin.bodyColor || this.stats.color);
+    const whiteColor = new THREE.Color('#ffffff');
+    const bootsColor = new THREE.Color('#18181b');
 
-    // Chunky pixel voxel materials
-    const headMat = new THREE.MeshLambertMaterial({ color: headColor });
-    const bodyMat = new THREE.MeshLambertMaterial({ color: bodyColor });
-    const limbMat = new THREE.MeshLambertMaterial({ color: mainColor });
-    const darkMat = new THREE.MeshLambertMaterial({ color: detailColor });
+    // Materials
+    const skinMat = new THREE.MeshLambertMaterial({ color: skinToneColor });
+    const hairMat = new THREE.MeshLambertMaterial({ color: hairColor });
+    const shortsMat = new THREE.MeshLambertMaterial({ color: shortsColor });
+    const whiteMat = new THREE.MeshLambertMaterial({ color: whiteColor });
+    const bootsMat = new THREE.MeshLambertMaterial({ color: bootsColor });
+    const eyePupilMat = new THREE.MeshBasicMaterial({ color: 0x18181b });
+    const eyeWhiteMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
 
-    // 1. Head (Voxel Cube)
-    const headGeo = new THREE.BoxGeometry(0.7, 0.7, 0.7);
-    this.headMesh = new THREE.Mesh(headGeo, headMat);
-    this.headMesh.position.y = 1.45;
+    // ==========================================
+    // 1. HEAD & HAIR (Boxer Face & Short Cut Hair)
+    // ==========================================
+    const headGeo = new THREE.BoxGeometry(0.64, 0.64, 0.62);
+    this.headMesh = new THREE.Mesh(headGeo, skinMat);
+    this.headMesh.position.y = 1.46;
     this.headMesh.castShadow = true;
 
-    // Face features (Eyes)
-    const eyeGeo = new THREE.BoxGeometry(0.12, 0.12, 0.05);
-    const eyeMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
-    const eyeL = new THREE.Mesh(eyeGeo, eyeMat);
-    eyeL.position.set(-0.18, 0.05, 0.36);
-    const eyeR = new THREE.Mesh(eyeGeo, eyeMat);
-    eyeR.position.set(0.18, 0.05, 0.36);
-    this.headMesh.add(eyeL, eyeR);
+    // Hair Top Cap
+    const hairTopGeo = new THREE.BoxGeometry(0.68, 0.22, 0.66);
+    const hairTop = new THREE.Mesh(hairTopGeo, hairMat);
+    hairTop.position.set(0, 0.24, -0.01);
 
-    // 2. Torso (Chunky Body)
-    const bodyGeo = new THREE.BoxGeometry(0.75, 0.8, 0.45);
-    this.bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
-    this.bodyMesh.position.y = 0.75;
-    this.bodyMesh.castShadow = true;
+    // Hair Back
+    const hairBackGeo = new THREE.BoxGeometry(0.66, 0.38, 0.16);
+    const hairBack = new THREE.Mesh(hairBackGeo, hairMat);
+    hairBack.position.set(0, 0.08, -0.26);
 
-    // 3. Left Arm
-    const armGeo = new THREE.BoxGeometry(0.24, 0.65, 0.24);
-    this.leftArmMesh = new THREE.Mesh(armGeo, limbMat);
-    this.leftArmMesh.position.set(-0.52, 0.75, 0);
+    // Hair Sides / Sideburns
+    const hairSideGeo = new THREE.BoxGeometry(0.12, 0.3, 0.44);
+    const hairSideL = new THREE.Mesh(hairSideGeo, hairMat);
+    hairSideL.position.set(-0.3, 0.1, -0.05);
+    const hairSideR = new THREE.Mesh(hairSideGeo, hairMat);
+    hairSideR.position.set(0.3, 0.1, -0.05);
+
+    // Hair Front Fringe
+    const hairFringeGeo = new THREE.BoxGeometry(0.62, 0.1, 0.12);
+    const hairFringe = new THREE.Mesh(hairFringeGeo, hairMat);
+    hairFringe.position.set(0, 0.24, 0.28);
+
+    this.headMesh.add(hairTop, hairBack, hairSideL, hairSideR, hairFringe);
+
+    // Eyes (White Sclera + Dark Pupil + Specular Reflection)
+    const eyeWhiteGeo = new THREE.BoxGeometry(0.12, 0.1, 0.04);
+    const eyePupilGeo = new THREE.BoxGeometry(0.08, 0.08, 0.05);
+
+    const eyeWL = new THREE.Mesh(eyeWhiteGeo, eyeWhiteMat);
+    eyeWL.position.set(-0.16, 0.02, 0.32);
+    const eyePL = new THREE.Mesh(eyePupilGeo, eyePupilMat);
+    eyePL.position.set(-0.15, 0.02, 0.33);
+
+    const eyeWR = new THREE.Mesh(eyeWhiteGeo, eyeWhiteMat);
+    eyeWR.position.set(0.16, 0.02, 0.32);
+    const eyePR = new THREE.Mesh(eyePupilGeo, eyePupilMat);
+    eyePR.position.set(0.15, 0.02, 0.33);
+
+    // Nose Voxel
+    const noseGeo = new THREE.BoxGeometry(0.08, 0.08, 0.08);
+    const nose = new THREE.Mesh(noseGeo, skinMat);
+    nose.position.set(0, -0.06, 0.34);
+
+    // Mouth Voxel
+    const mouthGeo = new THREE.BoxGeometry(0.14, 0.04, 0.04);
+    const mouthMat = new THREE.MeshBasicMaterial({ color: 0x854d0e });
+    const mouth = new THREE.Mesh(mouthGeo, mouthMat);
+    mouth.position.set(0, -0.18, 0.32);
+
+    // Left & Right Ears
+    const earGeo = new THREE.BoxGeometry(0.08, 0.14, 0.12);
+    const earL = new THREE.Mesh(earGeo, skinMat);
+    earL.position.set(-0.34, 0, 0.02);
+    const earR = new THREE.Mesh(earGeo, skinMat);
+    earR.position.set(0.34, 0, 0.02);
+
+    this.headMesh.add(eyeWL, eyePL, eyeWR, eyePR, nose, mouth, earL, earR);
+
+    // ==========================================
+    // 2. TORSO (Muscular Chest, Abs & Waistband)
+    // ==========================================
+    this.bodyMesh = new THREE.Group();
+    this.bodyMesh.position.y = 0.78;
+
+    // Muscular Upper Torso / Pectorals
+    const chestGeo = new THREE.BoxGeometry(0.68, 0.44, 0.4);
+    const chest = new THREE.Mesh(chestGeo, skinMat);
+    chest.position.set(0, 0.16, 0);
+    chest.castShadow = true;
+
+    // Pectoral Plates Relief
+    const peckGeo = new THREE.BoxGeometry(0.28, 0.18, 0.05);
+    const peckL = new THREE.Mesh(peckGeo, skinMat);
+    peckL.position.set(-0.16, 0.2, 0.2);
+    const peckR = new THREE.Mesh(peckGeo, skinMat);
+    peckR.position.set(0.16, 0.2, 0.2);
+
+    // Abdominal Muscles Plate (Six-Pack Relief)
+    const absGeo = new THREE.BoxGeometry(0.42, 0.26, 0.04);
+    const absMat = new THREE.MeshLambertMaterial({ color: new THREE.Color('#d4976c') });
+    const abs = new THREE.Mesh(absGeo, absMat);
+    abs.position.set(0, -0.04, 0.19);
+
+    // White Boxing Waistband Elastic
+    const waistbandGeo = new THREE.BoxGeometry(0.7, 0.1, 0.42);
+    const waistband = new THREE.Mesh(waistbandGeo, whiteMat);
+    waistband.position.set(0, -0.16, 0);
+
+    // Boxing Shorts Main Pelvis
+    const shortsGeo = new THREE.BoxGeometry(0.68, 0.22, 0.4);
+    const shortsPelvis = new THREE.Mesh(shortsGeo, shortsMat);
+    shortsPelvis.position.set(0, -0.3, 0);
+    shortsPelvis.castShadow = true;
+
+    // Shorts Left & Right Leg Cutouts with White Side Stripes
+    const shortLegGeo = new THREE.BoxGeometry(0.3, 0.24, 0.38);
+    const shortLegL = new THREE.Mesh(shortLegGeo, shortsMat);
+    shortLegL.position.set(-0.18, -0.44, 0);
+    const stripeL = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.24, 0.39), whiteMat);
+    stripeL.position.set(-0.14, 0, 0);
+    shortLegL.add(stripeL);
+
+    const shortLegR = new THREE.Mesh(shortLegGeo, shortsMat);
+    shortLegR.position.set(0.18, -0.44, 0);
+    const stripeR = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.24, 0.39), whiteMat);
+    stripeR.position.set(0.14, 0, 0);
+    shortLegR.add(stripeR);
+
+    this.bodyMesh.add(chest, peckL, peckR, abs, waistband, shortsPelvis, shortLegL, shortLegR);
+
+    // ==========================================
+    // 3. ARMS & DUAL BOXING GLOVES (Guard Stance)
+    // ==========================================
+    const armUpperGeo = new THREE.BoxGeometry(0.22, 0.38, 0.22);
+    const armForeGeo = new THREE.BoxGeometry(0.2, 0.32, 0.2);
+
+    // LEFT ARM (In boxing guard stance)
+    this.leftArmMesh = new THREE.Group();
+    this.leftArmMesh.position.set(-0.48, 0.88, 0.05);
+
+    const leftUpper = new THREE.Mesh(armUpperGeo, skinMat);
+    leftUpper.position.set(0, -0.14, 0);
+    const leftFore = new THREE.Mesh(armForeGeo, skinMat);
+    leftFore.position.set(0.04, -0.36, 0.12);
+    leftFore.rotation.x = -0.45;
+
+    // Left Boxing Glove
+    const leftGloveGroup = this.createGloveMesh(fighterColor, false);
+    leftGloveGroup.position.set(0.05, -0.22, 0.15);
+    leftFore.add(leftGloveGroup);
+
+    this.leftArmMesh.add(leftUpper, leftFore);
     this.leftArmMesh.castShadow = true;
 
-    // 4. Right Arm (Carries the Steal Glove)
-    this.rightArmMesh = new THREE.Mesh(armGeo, limbMat);
-    this.rightArmMesh.position.set(0.52, 0.75, 0);
+    // RIGHT ARM (Offensive punch arm)
+    this.rightArmMesh = new THREE.Group();
+    this.rightArmMesh.position.set(0.48, 0.88, 0);
+
+    const rightUpper = new THREE.Mesh(armUpperGeo, skinMat);
+    rightUpper.position.set(0, -0.14, 0);
+    const rightFore = new THREE.Mesh(armForeGeo, skinMat);
+    rightFore.position.set(-0.02, -0.36, 0.08);
+
+    this.rightArmMesh.add(rightUpper, rightFore);
     this.rightArmMesh.castShadow = true;
 
-    // 5. Legs
-    const legGeo = new THREE.BoxGeometry(0.26, 0.55, 0.26);
-    this.leftLegMesh = new THREE.Mesh(legGeo, darkMat);
-    this.leftLegMesh.position.set(-0.2, 0.28, 0);
+    // ==========================================
+    // 4. LEGS & BOXING BOOTS (Thighs + High-Top Boots)
+    // ==========================================
+    const legGeo = new THREE.BoxGeometry(0.22, 0.28, 0.22);
+    const bootGeo = new THREE.BoxGeometry(0.24, 0.24, 0.32);
+    const soleGeo = new THREE.BoxGeometry(0.25, 0.06, 0.34);
+    const laceGeo = new THREE.BoxGeometry(0.25, 0.06, 0.24);
+
+    // LEFT LEG
+    this.leftLegMesh = new THREE.Group();
+    this.leftLegMesh.position.set(-0.18, 0.44, 0);
+
+    const thighL = new THREE.Mesh(legGeo, skinMat);
+    thighL.position.set(0, -0.1, 0);
+
+    const bootL = new THREE.Mesh(bootGeo, bootsMat);
+    bootL.position.set(0, -0.32, 0.03);
+    const soleL = new THREE.Mesh(soleGeo, whiteMat);
+    soleL.position.set(0, -0.12, 0.01);
+    const laceL = new THREE.Mesh(laceGeo, whiteMat);
+    laceL.position.set(0, 0.08, 0.01);
+    bootL.add(soleL, laceL);
+
+    this.leftLegMesh.add(thighL, bootL);
     this.leftLegMesh.castShadow = true;
 
-    this.rightLegMesh = new THREE.Mesh(legGeo, darkMat);
-    this.rightLegMesh.position.set(0.2, 0.28, 0);
+    // RIGHT LEG
+    this.rightLegMesh = new THREE.Group();
+    this.rightLegMesh.position.set(0.18, 0.44, 0);
+
+    const thighR = new THREE.Mesh(legGeo, skinMat);
+    thighR.position.set(0, -0.1, 0);
+
+    const bootR = new THREE.Mesh(bootGeo, bootsMat);
+    bootR.position.set(0, -0.32, 0.03);
+    const soleR = new THREE.Mesh(soleGeo, whiteMat);
+    soleR.position.set(0, -0.12, 0.01);
+    const laceR = new THREE.Mesh(laceGeo, whiteMat);
+    laceR.position.set(0, 0.08, 0.01);
+    bootR.add(soleR, laceR);
+
+    this.rightLegMesh.add(thighR, bootR);
     this.rightLegMesh.castShadow = true;
 
     this.group.add(
@@ -375,26 +536,46 @@ export class Character3D {
     );
   }
 
+  // Helper to build a curved, authentic pixel boxing glove with wrist strap
+  private createGloveMesh(gloveColor: THREE.Color, withEmblem: boolean = true): THREE.Group {
+    const group = new THREE.Group();
+    const gloveMat = new THREE.MeshLambertMaterial({ color: gloveColor });
+    const whiteMat = new THREE.MeshLambertMaterial({ color: 0xffffff });
+
+    // Main Curved Glove Cap
+    const capGeo = new THREE.BoxGeometry(0.42, 0.42, 0.48);
+    const cap = new THREE.Mesh(capGeo, gloveMat);
+    cap.position.set(0, 0, 0.08);
+    cap.castShadow = true;
+
+    // Thumb notch on inner side
+    const thumbGeo = new THREE.BoxGeometry(0.16, 0.22, 0.22);
+    const thumb = new THREE.Mesh(thumbGeo, gloveMat);
+    thumb.position.set(0.18, -0.05, 0.06);
+
+    // White Wrist Velcro Strap Band
+    const strapGeo = new THREE.BoxGeometry(0.44, 0.1, 0.44);
+    const strap = new THREE.Mesh(strapGeo, whiteMat);
+    strap.position.set(0, 0.2, 0);
+
+    group.add(cap, thumb, strap);
+
+    // Golden Coin Theft Emblem on outer face
+    if (withEmblem) {
+      const emblemGeo = new THREE.BoxGeometry(0.18, 0.18, 0.06);
+      const emblemMat = new THREE.MeshLambertMaterial({ color: 0xf59e0b });
+      const emblem = new THREE.Mesh(emblemGeo, emblemMat);
+      emblem.position.set(0, 0, 0.25);
+      cap.add(emblem);
+    }
+
+    return group;
+  }
+
   // Build the 3D Pixel Steal Glove attached to right fist
   private buildGlove() {
-    this.gloveMesh = new THREE.Group();
-
-    // Main Glove boxing cap
-    const gloveCapGeo = new THREE.BoxGeometry(0.48, 0.48, 0.55);
-    const gloveMat = new THREE.MeshLambertMaterial({ color: new THREE.Color(this.stats.color) });
-    const gloveCap = new THREE.Mesh(gloveCapGeo, gloveMat);
-    gloveCap.position.set(0, -0.2, 0.15);
-    gloveCap.castShadow = true;
-
-    // Golden Coin Thief Icon on back of glove
-    const emblemGeo = new THREE.BoxGeometry(0.2, 0.2, 0.08);
-    const emblemMat = new THREE.MeshLambertMaterial({ color: 0xf59e0b });
-    const emblem = new THREE.Mesh(emblemGeo, emblemMat);
-    emblem.position.set(0, 0, 0.3);
-    gloveCap.add(emblem);
-
-    this.gloveMesh.add(gloveCap);
-    this.gloveMesh.position.set(0, -0.3, 0);
+    this.gloveMesh = this.createGloveMesh(new THREE.Color(this.stats.color), true);
+    this.gloveMesh.position.set(0, -0.55, 0.12);
     this.rightArmMesh.add(this.gloveMesh);
   }
 
@@ -655,14 +836,14 @@ export class Character3D {
         this.isPunching = false;
         this.punchAnimProgress = 0;
         this.stats.isAttacking = false;
-        this.rightArmMesh.position.set(0.52, 0.75, 0);
+        this.rightArmMesh.position.set(0.48, 0.88, 0);
         this.rightArmMesh.rotation.set(0, 0, 0);
       } else {
         // Forward extension & recovery arc
         const progress = this.punchAnimProgress;
         const forwardReach = Math.sin(progress * Math.PI) * (this.punchType === 'titan' ? 1.3 : 0.85);
         this.rightArmMesh.position.z = forwardReach;
-        this.rightArmMesh.position.y = 0.75 + Math.sin(progress * Math.PI) * 0.25;
+        this.rightArmMesh.position.y = 0.88 + Math.sin(progress * Math.PI) * 0.25;
         this.rightArmMesh.rotation.x = -Math.sin(progress * Math.PI) * 1.0;
       }
     }
