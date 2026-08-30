@@ -134,9 +134,11 @@ export class Character3D {
   // 3D Pixel Voxel Hat & Cosmetics
   private buildHat() {
     if (this.skin.hatType === 'none') return;
+    const hatType = this.skin.hatType;
+    if (this.stats.classId === 'shadow_thief' && (hatType === 'hood' || hatType === 'ninja')) return;
+    if (this.stats.classId === 'iron_guardian' && hatType === 'helmet') return;
 
     this.hatMesh = new THREE.Group();
-    const hatType = this.skin.hatType;
     const detailColor = new THREE.Color(this.skin.detailColor);
     const goldColor = new THREE.Color(0xf59e0b);
     const redColor = new THREE.Color(0xef4444);
@@ -312,14 +314,335 @@ export class Character3D {
   }
 
   private buildMesh() {
+    if (this.stats.classId === 'shadow_thief') {
+      this.buildShadowThiefMesh();
+    } else if (this.stats.classId === 'iron_guardian') {
+      this.buildIronGuardianMesh();
+    } else {
+      this.buildBrawlerMesh();
+    }
+  }
+
+  // =========================================================================
+  // 1. PÍCARO SOMBRÍO (SHADOW THIEF - REFERENCE 1: Hooded Cloak, Mask, Potions & Daggers)
+  // =========================================================================
+  private buildShadowThiefMesh() {
+    const cloakColor = new THREE.Color(this.skin.bodyColor || '#242e26'); // Dark charcoal / forest green
+    const tunicColor = new THREE.Color('#2e3d30');
+    const leatherColor = new THREE.Color('#3b2212');
+    const maskColor = new THREE.Color('#6b655b'); // Cloth face mask
+    const steelColor = new THREE.Color('#cbd5e1');
+    const goldColor = new THREE.Color('#fbbf24');
+    const potionColor = new THREE.Color('#c084fc'); // Purple elixir
+
+    const cloakMat = new THREE.MeshLambertMaterial({ color: cloakColor });
+    const tunicMat = new THREE.MeshLambertMaterial({ color: tunicColor });
+    const leatherMat = new THREE.MeshLambertMaterial({ color: leatherColor });
+    const maskMat = new THREE.MeshLambertMaterial({ color: maskColor });
+    const steelMat = new THREE.MeshLambertMaterial({ color: steelColor });
+    const goldMat = new THREE.MeshLambertMaterial({ color: goldColor });
+    const shadowFaceMat = new THREE.MeshBasicMaterial({ color: 0x090c0a });
+    const eyeGlowMat = new THREE.MeshBasicMaterial({ color: 0xfef08a });
+    const potionMat = new THREE.MeshLambertMaterial({ color: potionColor });
+    const glassMat = new THREE.MeshLambertMaterial({ color: 0xe2e8f0, transparent: true, opacity: 0.8 });
+
+    // --- HEAD: Hooded Cowl + Shadow Face + Face Mask ---
+    this.headMesh = new THREE.Group();
+    this.headMesh.position.y = 1.45;
+
+    // Shadow Face Base
+    const faceBase = new THREE.Mesh(new THREE.BoxGeometry(0.58, 0.58, 0.58), shadowFaceMat);
+    this.headMesh.add(faceBase);
+
+    // Hood Top Peak & Sides
+    const hoodTop = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.2, 0.72), cloakMat);
+    hoodTop.position.set(0, 0.25, -0.02);
+    const hoodPeak = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.16, 0.28), cloakMat);
+    hoodPeak.position.set(0, 0.36, -0.16);
+    const hoodBack = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.55, 0.2), cloakMat);
+    hoodBack.position.set(0, 0.02, -0.27);
+    const hoodSideL = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.55, 0.65), cloakMat);
+    hoodSideL.position.set(-0.3, 0.02, 0.02);
+    const hoodSideR = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.55, 0.65), cloakMat);
+    hoodSideR.position.set(0.3, 0.02, 0.02);
+    const hoodBrow = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.1, 0.24), cloakMat);
+    hoodBrow.position.set(0, 0.24, 0.26);
+
+    // Lower Cloth Face Mask
+    const faceMask = new THREE.Mesh(new THREE.BoxGeometry(0.54, 0.24, 0.14), maskMat);
+    faceMask.position.set(0, -0.12, 0.26);
+
+    // Glowing Eyes under the hood shadow
+    const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.04, 0.04), eyeGlowMat);
+    eyeL.position.set(-0.14, 0.06, 0.28);
+    const eyeR = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.04, 0.04), eyeGlowMat);
+    eyeR.position.set(0.14, 0.06, 0.28);
+
+    this.headMesh.add(hoodTop, hoodPeak, hoodBack, hoodSideL, hoodSideR, hoodBrow, faceMask, eyeL, eyeR);
+
+    // --- TORSO: Dark Tunic, Ragged Hooded Cloak, Belt with Potion & Key ---
+    this.bodyMesh = new THREE.Group();
+    this.bodyMesh.position.y = 0.78;
+
+    // Tunic Torso
+    const tunic = new THREE.Mesh(new THREE.BoxGeometry(0.66, 0.5, 0.4), tunicMat);
+    tunic.position.set(0, 0.12, 0);
+
+    // Leather Chest Bandolier Cross-Strap
+    const strap = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.52, 0.44), leatherMat);
+    strap.rotation.z = -0.4;
+    strap.position.set(0, 0.12, 0.01);
+
+    // Leather Belt & Buckle
+    const belt = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.1, 0.42), leatherMat);
+    belt.position.set(0, -0.15, 0);
+    const buckle = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.04), steelMat);
+    buckle.position.set(0, -0.15, 0.22);
+
+    // Potion Bottle Vial (Purple Elixir) on belt
+    const potionGroup = new THREE.Group();
+    potionGroup.position.set(-0.24, -0.22, 0.2);
+    const potGlass = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.14, 0.1), glassMat);
+    const potLiquid = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.09, 0.08), potionMat);
+    potLiquid.position.y = -0.02;
+    const potCork = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.05, 0.06), leatherMat);
+    potCork.position.y = 0.09;
+    potionGroup.add(potGlass, potLiquid, potCork);
+
+    // Golden Skeleton Key on belt
+    const keyGroup = new THREE.Group();
+    keyGroup.position.set(0.14, -0.24, 0.2);
+    const keyRing = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.03), goldMat);
+    const keyShaft = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.14, 0.03), goldMat);
+    keyShaft.position.y = -0.09;
+    const keyTeeth = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.04, 0.03), goldMat);
+    keyTeeth.position.set(0.03, -0.12, 0);
+    keyGroup.add(keyRing, keyShaft, keyTeeth);
+
+    // Flowing Jagged Cape over Back & Shoulders
+    const capeBack = new THREE.Mesh(new THREE.BoxGeometry(0.78, 0.95, 0.14), cloakMat);
+    capeBack.position.set(0, -0.15, -0.24);
+    const capeShoulderL = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.24, 0.44), cloakMat);
+    capeShoulderL.position.set(-0.38, 0.28, -0.02);
+    const capeShoulderR = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.24, 0.44), cloakMat);
+    capeShoulderR.position.set(0.38, 0.28, -0.02);
+
+    // Ragged Tunic Hem Cuts
+    const tunicHem = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.26, 0.42), tunicMat);
+    tunicHem.position.set(0, -0.32, 0);
+
+    this.bodyMesh.add(tunic, strap, belt, buckle, potionGroup, keyGroup, capeBack, capeShoulderL, capeShoulderR, tunicHem);
+
+    // --- ARMS: Leather Bracers & Dual Rogue Daggers ---
+    const armGeo = new THREE.BoxGeometry(0.2, 0.36, 0.2);
+
+    // Left Arm + Dagger 1
+    this.leftArmMesh = new THREE.Group();
+    this.leftArmMesh.position.set(-0.48, 0.88, 0.05);
+    const leftArm = new THREE.Mesh(armGeo, tunicMat);
+    leftArm.position.set(0, -0.14, 0);
+    const bracerL = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.2, 0.24), leatherMat);
+    bracerL.position.set(0, -0.32, 0);
+
+    // Rogue Dagger Left
+    const daggerL = this.createDaggerMesh(steelMat, leatherMat);
+    daggerL.position.set(0, -0.42, 0.14);
+    daggerL.rotation.x = 0.3;
+    this.leftArmMesh.add(leftArm, bracerL, daggerL);
+
+    // Right Arm + Offense Blade
+    this.rightArmMesh = new THREE.Group();
+    this.rightArmMesh.position.set(0.48, 0.88, 0);
+    const rightArm = new THREE.Mesh(armGeo, tunicMat);
+    rightArm.position.set(0, -0.14, 0);
+    const bracerR = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.2, 0.24), leatherMat);
+    bracerR.position.set(0, -0.32, 0);
+    this.rightArmMesh.add(rightArm, bracerR);
+
+    // --- LEGS: Dark Pants & Cuffed Leather Rogue Boots ---
+    const legGeo = new THREE.BoxGeometry(0.22, 0.26, 0.22);
+    const bootGeo = new THREE.BoxGeometry(0.26, 0.32, 0.32);
+    const bootCuffGeo = new THREE.BoxGeometry(0.29, 0.1, 0.3);
+
+    this.leftLegMesh = new THREE.Group();
+    this.leftLegMesh.position.set(-0.18, 0.44, 0);
+    const legL = new THREE.Mesh(legGeo, tunicMat);
+    legL.position.set(0, -0.1, 0);
+    const bootL = new THREE.Mesh(bootGeo, leatherMat);
+    bootL.position.set(0, -0.32, 0.03);
+    const cuffL = new THREE.Mesh(bootCuffGeo, leatherMat);
+    cuffL.position.set(0, -0.18, 0.02);
+    this.leftLegMesh.add(legL, bootL, cuffL);
+
+    this.rightLegMesh = new THREE.Group();
+    this.rightLegMesh.position.set(0.18, 0.44, 0);
+    const legR = new THREE.Mesh(legGeo, tunicMat);
+    legR.position.set(0, -0.1, 0);
+    const bootR = new THREE.Mesh(bootGeo, leatherMat);
+    bootR.position.set(0, -0.32, 0.03);
+    const cuffR = new THREE.Mesh(bootCuffGeo, leatherMat);
+    cuffR.position.set(0, -0.18, 0.02);
+    this.rightLegMesh.add(legR, bootR, cuffR);
+
+    this.group.add(this.headMesh, this.bodyMesh, this.leftArmMesh, this.rightArmMesh, this.leftLegMesh, this.rightLegMesh);
+  }
+
+  // =========================================================================
+  // 2. GUARDIÁN DE HIERRO (IRON GUARDIAN - REFERENCE 2: Full Steel Armor, Helm, Crest, Tower Shield & War Mace)
+  // =========================================================================
+  private buildIronGuardianMesh() {
+    const armorColor = new THREE.Color(this.skin.bodyColor || '#475569'); // Slate Steel Plate
+    const darkArmorColor = new THREE.Color('#334155');
+    const clothColor = new THREE.Color('#1e293b'); // Navy Blue Cloak / Scarf
+    const crestCyan = new THREE.Color('#38bdf8'); // Glowing Cyan Shield Crest
+    const goldColor = new THREE.Color('#fbbf24');
+    const leatherColor = new THREE.Color('#3f2817');
+    const potionColor = new THREE.Color('#c084fc');
+
+    const plateMat = new THREE.MeshLambertMaterial({ color: armorColor });
+    const darkPlateMat = new THREE.MeshLambertMaterial({ color: darkArmorColor });
+    const clothMat = new THREE.MeshLambertMaterial({ color: clothColor });
+    const cyanMat = new THREE.MeshBasicMaterial({ color: crestCyan });
+    const goldMat = new THREE.MeshLambertMaterial({ color: goldColor });
+    const leatherMat = new THREE.MeshLambertMaterial({ color: leatherColor });
+    const visorMat = new THREE.MeshBasicMaterial({ color: 0x090d16 });
+    const potionMat = new THREE.MeshLambertMaterial({ color: potionColor });
+    const glassMat = new THREE.MeshLambertMaterial({ color: 0xe2e8f0, transparent: true, opacity: 0.8 });
+
+    // --- HEAD: Closed Iron Great Helm + Visor + Navy Blue Scarf ---
+    this.headMesh = new THREE.Group();
+    this.headMesh.position.y = 1.48;
+
+    // Helm Dome & Sides
+    const helm = new THREE.Mesh(new THREE.BoxGeometry(0.66, 0.66, 0.66), plateMat);
+    const helmRidge = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.72, 0.7), darkPlateMat);
+    helmRidge.position.set(0, 0.04, 0);
+
+    // Visor Slit (Dark eye recess)
+    const visor = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.1, 0.06), visorMat);
+    visor.position.set(0, 0.04, 0.32);
+
+    // Navy Blue Cloth Scarf Wrap under helmet
+    const scarf = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.18, 0.72), clothMat);
+    scarf.position.set(0, -0.28, 0);
+
+    this.headMesh.add(helm, helmRidge, visor, scarf);
+
+    // --- TORSO: Steel Breastplate with Cyan Shield Crest, Pauldrons, Belt & Cloak ---
+    this.bodyMesh = new THREE.Group();
+    this.bodyMesh.position.y = 0.8;
+
+    // Heavy Cuirass (Breastplate)
+    const breastplate = new THREE.Mesh(new THREE.BoxGeometry(0.74, 0.52, 0.46), plateMat);
+    breastplate.position.set(0, 0.14, 0);
+
+    // Glowing Cyan Shield Crest on Chest
+    const crestGroup = new THREE.Group();
+    crestGroup.position.set(0, 0.18, 0.24);
+    const crestPlate = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.26, 0.04), darkPlateMat);
+    const crestEmblem = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.2, 0.05), cyanMat);
+    crestGroup.add(crestPlate, crestEmblem);
+
+    // Rounded Riveted Shoulder Pauldrons
+    const pauldronL = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.26, 0.48), plateMat);
+    pauldronL.position.set(-0.46, 0.32, 0);
+    const rivetL = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.5), goldMat);
+    rivetL.position.set(-0.46, 0.34, 0);
+
+    const pauldronR = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.26, 0.48), plateMat);
+    pauldronR.position.set(0.46, 0.32, 0);
+    const rivetR = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.5), goldMat);
+    rivetR.position.set(0.46, 0.34, 0);
+
+    // Steel Plated Belt with Buckle
+    const belt = new THREE.Mesh(new THREE.BoxGeometry(0.76, 0.12, 0.48), darkPlateMat);
+    belt.position.set(0, -0.16, 0);
+    const buckle = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.14, 0.06), goldMat);
+    buckle.position.set(0, -0.16, 0.25);
+
+    // Potion Vial & Gold Key on belt
+    const potGroup = new THREE.Group();
+    potGroup.position.set(-0.26, -0.24, 0.24);
+    const potG = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.14, 0.1), glassMat);
+    const potL = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.09, 0.08), potionMat);
+    potGroup.add(potG, potL);
+
+    const keyG = new THREE.Group();
+    keyG.position.set(0.24, -0.24, 0.24);
+    const keyS = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.16, 0.04), goldMat);
+    keyG.add(keyS);
+
+    // Tattered Battle Cloak draping behind armor
+    const cloak = new THREE.Mesh(new THREE.BoxGeometry(0.82, 1.05, 0.14), clothMat);
+    cloak.position.set(0, -0.18, -0.28);
+
+    // Armored Tassets / Faulds
+    const tassets = new THREE.Mesh(new THREE.BoxGeometry(0.74, 0.24, 0.46), plateMat);
+    tassets.position.set(0, -0.32, 0);
+
+    this.bodyMesh.add(breastplate, crestGroup, pauldronL, rivetL, pauldronR, rivetR, belt, buckle, potGroup, keyG, cloak, tassets);
+
+    // --- ARMS: Steel Tower / Kite Shield (Left) & Spiked War Mace (Right) ---
+    const armGeo = new THREE.BoxGeometry(0.22, 0.38, 0.22);
+
+    // Left Arm + Steel Kite Shield with Cyan Emblem
+    this.leftArmMesh = new THREE.Group();
+    this.leftArmMesh.position.set(-0.52, 0.9, 0);
+    const leftArm = new THREE.Mesh(armGeo, plateMat);
+    leftArm.position.set(0, -0.14, 0);
+
+    // Kite Shield
+    const shieldGroup = this.createKiteShieldMesh(plateMat, darkPlateMat, cyanMat);
+    shieldGroup.position.set(-0.16, -0.26, 0.25);
+    shieldGroup.rotation.y = 0.3;
+    this.leftArmMesh.add(leftArm, shieldGroup);
+
+    // Right Arm (Weapon / Mace Arm)
+    this.rightArmMesh = new THREE.Group();
+    this.rightArmMesh.position.set(0.52, 0.9, 0);
+    const rightArm = new THREE.Mesh(armGeo, plateMat);
+    rightArm.position.set(0, -0.14, 0);
+
+    // Spiked War Mace
+    const maceGroup = this.createWarMaceMesh(darkPlateMat, plateMat);
+    maceGroup.position.set(0.05, -0.35, 0.2);
+    maceGroup.rotation.x = Math.PI / 4;
+    this.rightArmMesh.add(rightArm, maceGroup);
+
+    // --- LEGS: Plate Greaves & Armored Steel Sabatons ---
+    const legGeo = new THREE.BoxGeometry(0.24, 0.28, 0.24);
+    const bootGeo = new THREE.BoxGeometry(0.26, 0.34, 0.36);
+
+    this.leftLegMesh = new THREE.Group();
+    this.leftLegMesh.position.set(-0.2, 0.44, 0);
+    const legL = new THREE.Mesh(legGeo, plateMat);
+    legL.position.set(0, -0.1, 0);
+    const bootL = new THREE.Mesh(bootGeo, darkPlateMat);
+    bootL.position.set(0, -0.32, 0.04);
+    this.leftLegMesh.add(legL, bootL);
+
+    this.rightLegMesh = new THREE.Group();
+    this.rightLegMesh.position.set(0.2, 0.44, 0);
+    const legR = new THREE.Mesh(legGeo, plateMat);
+    legR.position.set(0, -0.1, 0);
+    const bootR = new THREE.Mesh(bootGeo, darkPlateMat);
+    bootR.position.set(0, -0.32, 0.04);
+    this.rightLegMesh.add(legR, bootR);
+
+    this.group.add(this.headMesh, this.bodyMesh, this.leftArmMesh, this.rightArmMesh, this.leftLegMesh, this.rightLegMesh);
+  }
+
+  // =========================================================================
+  // 3. BOXEADOR TITÁN (BRAWLER - REFERENCE 3: Proportioned Boxer with Hair, Shorts & Dual Gloves)
+  // =========================================================================
+  private buildBrawlerMesh() {
     const fighterColor = new THREE.Color(this.stats.color);
-    const skinToneColor = new THREE.Color('#e8b188'); // Warm retro pixel boxer skin tone
+    const skinToneColor = new THREE.Color('#e8b188');
     const hairColor = new THREE.Color(this.skin.headColor || '#452613');
     const shortsColor = new THREE.Color(this.skin.bodyColor || this.stats.color);
     const whiteColor = new THREE.Color('#ffffff');
     const bootsColor = new THREE.Color('#18181b');
 
-    // Materials
     const skinMat = new THREE.MeshLambertMaterial({ color: skinToneColor });
     const hairMat = new THREE.MeshLambertMaterial({ color: hairColor });
     const shortsMat = new THREE.MeshLambertMaterial({ color: shortsColor });
@@ -328,117 +651,68 @@ export class Character3D {
     const eyePupilMat = new THREE.MeshBasicMaterial({ color: 0x18181b });
     const eyeWhiteMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
 
-    // ==========================================
-    // 1. HEAD & HAIR (Boxer Face & Short Cut Hair)
-    // ==========================================
+    // Head
     const headGeo = new THREE.BoxGeometry(0.64, 0.64, 0.62);
     this.headMesh = new THREE.Mesh(headGeo, skinMat);
     this.headMesh.position.y = 1.46;
     this.headMesh.castShadow = true;
 
-    // Hair Top Cap
-    const hairTopGeo = new THREE.BoxGeometry(0.68, 0.22, 0.66);
-    const hairTop = new THREE.Mesh(hairTopGeo, hairMat);
+    const hairTop = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.22, 0.66), hairMat);
     hairTop.position.set(0, 0.24, -0.01);
-
-    // Hair Back
-    const hairBackGeo = new THREE.BoxGeometry(0.66, 0.38, 0.16);
-    const hairBack = new THREE.Mesh(hairBackGeo, hairMat);
+    const hairBack = new THREE.Mesh(new THREE.BoxGeometry(0.66, 0.38, 0.16), hairMat);
     hairBack.position.set(0, 0.08, -0.26);
-
-    // Hair Sides / Sideburns
-    const hairSideGeo = new THREE.BoxGeometry(0.12, 0.3, 0.44);
-    const hairSideL = new THREE.Mesh(hairSideGeo, hairMat);
+    const hairSideL = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.3, 0.44), hairMat);
     hairSideL.position.set(-0.3, 0.1, -0.05);
-    const hairSideR = new THREE.Mesh(hairSideGeo, hairMat);
+    const hairSideR = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.3, 0.44), hairMat);
     hairSideR.position.set(0.3, 0.1, -0.05);
-
-    // Hair Front Fringe
-    const hairFringeGeo = new THREE.BoxGeometry(0.62, 0.1, 0.12);
-    const hairFringe = new THREE.Mesh(hairFringeGeo, hairMat);
+    const hairFringe = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.1, 0.12), hairMat);
     hairFringe.position.set(0, 0.24, 0.28);
-
     this.headMesh.add(hairTop, hairBack, hairSideL, hairSideR, hairFringe);
 
-    // Eyes (White Sclera + Dark Pupil + Specular Reflection)
-    const eyeWhiteGeo = new THREE.BoxGeometry(0.12, 0.1, 0.04);
-    const eyePupilGeo = new THREE.BoxGeometry(0.08, 0.08, 0.05);
-
-    const eyeWL = new THREE.Mesh(eyeWhiteGeo, eyeWhiteMat);
+    // Face
+    const eyeWL = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.1, 0.04), eyeWhiteMat);
     eyeWL.position.set(-0.16, 0.02, 0.32);
-    const eyePL = new THREE.Mesh(eyePupilGeo, eyePupilMat);
+    const eyePL = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.05), eyePupilMat);
     eyePL.position.set(-0.15, 0.02, 0.33);
 
-    const eyeWR = new THREE.Mesh(eyeWhiteGeo, eyeWhiteMat);
+    const eyeWR = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.1, 0.04), eyeWhiteMat);
     eyeWR.position.set(0.16, 0.02, 0.32);
-    const eyePR = new THREE.Mesh(eyePupilGeo, eyePupilMat);
+    const eyePR = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.05), eyePupilMat);
     eyePR.position.set(0.15, 0.02, 0.33);
 
-    // Nose Voxel
-    const noseGeo = new THREE.BoxGeometry(0.08, 0.08, 0.08);
-    const nose = new THREE.Mesh(noseGeo, skinMat);
+    const nose = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.08), skinMat);
     nose.position.set(0, -0.06, 0.34);
-
-    // Mouth Voxel
-    const mouthGeo = new THREE.BoxGeometry(0.14, 0.04, 0.04);
-    const mouthMat = new THREE.MeshBasicMaterial({ color: 0x854d0e });
-    const mouth = new THREE.Mesh(mouthGeo, mouthMat);
+    const mouth = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.04, 0.04), new THREE.MeshBasicMaterial({ color: 0x854d0e }));
     mouth.position.set(0, -0.18, 0.32);
-
-    // Left & Right Ears
-    const earGeo = new THREE.BoxGeometry(0.08, 0.14, 0.12);
-    const earL = new THREE.Mesh(earGeo, skinMat);
+    const earL = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.14, 0.12), skinMat);
     earL.position.set(-0.34, 0, 0.02);
-    const earR = new THREE.Mesh(earGeo, skinMat);
+    const earR = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.14, 0.12), skinMat);
     earR.position.set(0.34, 0, 0.02);
-
     this.headMesh.add(eyeWL, eyePL, eyeWR, eyePR, nose, mouth, earL, earR);
 
-    // ==========================================
-    // 2. TORSO (Muscular Chest, Abs & Waistband)
-    // ==========================================
+    // Torso
     this.bodyMesh = new THREE.Group();
     this.bodyMesh.position.y = 0.78;
-
-    // Muscular Upper Torso / Pectorals
-    const chestGeo = new THREE.BoxGeometry(0.68, 0.44, 0.4);
-    const chest = new THREE.Mesh(chestGeo, skinMat);
+    const chest = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.44, 0.4), skinMat);
     chest.position.set(0, 0.16, 0);
-    chest.castShadow = true;
-
-    // Pectoral Plates Relief
-    const peckGeo = new THREE.BoxGeometry(0.28, 0.18, 0.05);
-    const peckL = new THREE.Mesh(peckGeo, skinMat);
+    const peckL = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.18, 0.05), skinMat);
     peckL.position.set(-0.16, 0.2, 0.2);
-    const peckR = new THREE.Mesh(peckGeo, skinMat);
+    const peckR = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.18, 0.05), skinMat);
     peckR.position.set(0.16, 0.2, 0.2);
-
-    // Abdominal Muscles Plate (Six-Pack Relief)
-    const absGeo = new THREE.BoxGeometry(0.42, 0.26, 0.04);
-    const absMat = new THREE.MeshLambertMaterial({ color: new THREE.Color('#d4976c') });
-    const abs = new THREE.Mesh(absGeo, absMat);
+    const abs = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.26, 0.04), new THREE.MeshLambertMaterial({ color: new THREE.Color('#d4976c') }));
     abs.position.set(0, -0.04, 0.19);
-
-    // White Boxing Waistband Elastic
-    const waistbandGeo = new THREE.BoxGeometry(0.7, 0.1, 0.42);
-    const waistband = new THREE.Mesh(waistbandGeo, whiteMat);
+    const waistband = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.1, 0.42), whiteMat);
     waistband.position.set(0, -0.16, 0);
 
-    // Boxing Shorts Main Pelvis
-    const shortsGeo = new THREE.BoxGeometry(0.68, 0.22, 0.4);
-    const shortsPelvis = new THREE.Mesh(shortsGeo, shortsMat);
+    const shortsPelvis = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.22, 0.4), shortsMat);
     shortsPelvis.position.set(0, -0.3, 0);
-    shortsPelvis.castShadow = true;
-
-    // Shorts Left & Right Leg Cutouts with White Side Stripes
-    const shortLegGeo = new THREE.BoxGeometry(0.3, 0.24, 0.38);
-    const shortLegL = new THREE.Mesh(shortLegGeo, shortsMat);
+    const shortLegL = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.24, 0.38), shortsMat);
     shortLegL.position.set(-0.18, -0.44, 0);
     const stripeL = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.24, 0.39), whiteMat);
     stripeL.position.set(-0.14, 0, 0);
     shortLegL.add(stripeL);
 
-    const shortLegR = new THREE.Mesh(shortLegGeo, shortsMat);
+    const shortLegR = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.24, 0.38), shortsMat);
     shortLegR.position.set(0.18, -0.44, 0);
     const stripeR = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.24, 0.39), whiteMat);
     stripeR.position.set(0.14, 0, 0);
@@ -446,57 +720,40 @@ export class Character3D {
 
     this.bodyMesh.add(chest, peckL, peckR, abs, waistband, shortsPelvis, shortLegL, shortLegR);
 
-    // ==========================================
-    // 3. ARMS & DUAL BOXING GLOVES (Guard Stance)
-    // ==========================================
+    // Arms
     const armUpperGeo = new THREE.BoxGeometry(0.22, 0.38, 0.22);
     const armForeGeo = new THREE.BoxGeometry(0.2, 0.32, 0.2);
 
-    // LEFT ARM (In boxing guard stance)
     this.leftArmMesh = new THREE.Group();
     this.leftArmMesh.position.set(-0.48, 0.88, 0.05);
-
     const leftUpper = new THREE.Mesh(armUpperGeo, skinMat);
     leftUpper.position.set(0, -0.14, 0);
     const leftFore = new THREE.Mesh(armForeGeo, skinMat);
     leftFore.position.set(0.04, -0.36, 0.12);
     leftFore.rotation.x = -0.45;
-
-    // Left Boxing Glove
     const leftGloveGroup = this.createGloveMesh(fighterColor, false);
     leftGloveGroup.position.set(0.05, -0.22, 0.15);
     leftFore.add(leftGloveGroup);
-
     this.leftArmMesh.add(leftUpper, leftFore);
-    this.leftArmMesh.castShadow = true;
 
-    // RIGHT ARM (Offensive punch arm)
     this.rightArmMesh = new THREE.Group();
     this.rightArmMesh.position.set(0.48, 0.88, 0);
-
     const rightUpper = new THREE.Mesh(armUpperGeo, skinMat);
     rightUpper.position.set(0, -0.14, 0);
     const rightFore = new THREE.Mesh(armForeGeo, skinMat);
     rightFore.position.set(-0.02, -0.36, 0.08);
-
     this.rightArmMesh.add(rightUpper, rightFore);
-    this.rightArmMesh.castShadow = true;
 
-    // ==========================================
-    // 4. LEGS & BOXING BOOTS (Thighs + High-Top Boots)
-    // ==========================================
+    // Legs
     const legGeo = new THREE.BoxGeometry(0.22, 0.28, 0.22);
     const bootGeo = new THREE.BoxGeometry(0.24, 0.24, 0.32);
     const soleGeo = new THREE.BoxGeometry(0.25, 0.06, 0.34);
     const laceGeo = new THREE.BoxGeometry(0.25, 0.06, 0.24);
 
-    // LEFT LEG
     this.leftLegMesh = new THREE.Group();
     this.leftLegMesh.position.set(-0.18, 0.44, 0);
-
     const thighL = new THREE.Mesh(legGeo, skinMat);
     thighL.position.set(0, -0.1, 0);
-
     const bootL = new THREE.Mesh(bootGeo, bootsMat);
     bootL.position.set(0, -0.32, 0.03);
     const soleL = new THREE.Mesh(soleGeo, whiteMat);
@@ -504,17 +761,12 @@ export class Character3D {
     const laceL = new THREE.Mesh(laceGeo, whiteMat);
     laceL.position.set(0, 0.08, 0.01);
     bootL.add(soleL, laceL);
-
     this.leftLegMesh.add(thighL, bootL);
-    this.leftLegMesh.castShadow = true;
 
-    // RIGHT LEG
     this.rightLegMesh = new THREE.Group();
     this.rightLegMesh.position.set(0.18, 0.44, 0);
-
     const thighR = new THREE.Mesh(legGeo, skinMat);
     thighR.position.set(0, -0.1, 0);
-
     const bootR = new THREE.Mesh(bootGeo, bootsMat);
     bootR.position.set(0, -0.32, 0.03);
     const soleR = new THREE.Mesh(soleGeo, whiteMat);
@@ -522,18 +774,49 @@ export class Character3D {
     const laceR = new THREE.Mesh(laceGeo, whiteMat);
     laceR.position.set(0, 0.08, 0.01);
     bootR.add(soleR, laceR);
-
     this.rightLegMesh.add(thighR, bootR);
-    this.rightLegMesh.castShadow = true;
 
-    this.group.add(
-      this.headMesh,
-      this.bodyMesh,
-      this.leftArmMesh,
-      this.rightArmMesh,
-      this.leftLegMesh,
-      this.rightLegMesh
-    );
+    this.group.add(this.headMesh, this.bodyMesh, this.leftArmMesh, this.rightArmMesh, this.leftLegMesh, this.rightLegMesh);
+  }
+
+  // Helper to build Rogue Dagger
+  private createDaggerMesh(steelMat: THREE.Material, leatherMat: THREE.Material): THREE.Group {
+    const group = new THREE.Group();
+    const blade = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.48, 0.08), steelMat);
+    blade.position.y = -0.2;
+    const hilt = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.04, 0.1), leatherMat);
+    const grip = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.16, 0.06), leatherMat);
+    grip.position.y = 0.1;
+    const pommel = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.04, 0.08), steelMat);
+    pommel.position.y = 0.18;
+    group.add(blade, hilt, grip, pommel);
+    return group;
+  }
+
+  // Helper to build Knight Kite Shield
+  private createKiteShieldMesh(plateMat: THREE.Material, darkPlateMat: THREE.Material, cyanMat: THREE.Material): THREE.Group {
+    const group = new THREE.Group();
+    const shieldBody = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.85, 0.55), plateMat);
+    const shieldRim = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.88, 0.58), darkPlateMat);
+    const shieldCrest = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.42, 0.28), cyanMat);
+    shieldCrest.position.set(-0.01, 0.05, 0);
+    group.add(shieldRim, shieldBody, shieldCrest);
+    return group;
+  }
+
+  // Helper to build Heavy Spiked War Mace
+  private createWarMaceMesh(shaftMat: THREE.Material, headMat: THREE.Material): THREE.Group {
+    const group = new THREE.Group();
+    const haft = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.85, 6), shaftMat);
+    haft.position.y = 0.1;
+    const maceHead = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.24, 0.24), headMat);
+    maceHead.position.y = 0.48;
+    const spike1 = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.08, 0.08), headMat);
+    spike1.position.y = 0.48;
+    const spike2 = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.36), headMat);
+    spike2.position.y = 0.48;
+    group.add(haft, maceHead, spike1, spike2);
+    return group;
   }
 
   // Helper to build a curved, authentic pixel boxing glove with wrist strap
@@ -542,25 +825,21 @@ export class Character3D {
     const gloveMat = new THREE.MeshLambertMaterial({ color: gloveColor });
     const whiteMat = new THREE.MeshLambertMaterial({ color: 0xffffff });
 
-    // Main Curved Glove Cap
     const capGeo = new THREE.BoxGeometry(0.42, 0.42, 0.48);
     const cap = new THREE.Mesh(capGeo, gloveMat);
     cap.position.set(0, 0, 0.08);
     cap.castShadow = true;
 
-    // Thumb notch on inner side
     const thumbGeo = new THREE.BoxGeometry(0.16, 0.22, 0.22);
     const thumb = new THREE.Mesh(thumbGeo, gloveMat);
     thumb.position.set(0.18, -0.05, 0.06);
 
-    // White Wrist Velcro Strap Band
     const strapGeo = new THREE.BoxGeometry(0.44, 0.1, 0.44);
     const strap = new THREE.Mesh(strapGeo, whiteMat);
     strap.position.set(0, 0.2, 0);
 
     group.add(cap, thumb, strap);
 
-    // Golden Coin Theft Emblem on outer face
     if (withEmblem) {
       const emblemGeo = new THREE.BoxGeometry(0.18, 0.18, 0.06);
       const emblemMat = new THREE.MeshLambertMaterial({ color: 0xf59e0b });
