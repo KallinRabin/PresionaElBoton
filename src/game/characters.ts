@@ -318,9 +318,387 @@ export class Character3D {
       this.buildShadowThiefMesh();
     } else if (this.stats.classId === 'iron_guardian') {
       this.buildIronGuardianMesh();
+    } else if (this.stats.classId === 'gravity_mage') {
+      this.buildGravityMageMesh();
+    } else if (this.stats.classId === 'trapster') {
+      this.buildTrapsterMesh();
     } else {
       this.buildBrawlerMesh();
     }
+  }
+
+  // =========================================================================
+  // 4. MAGO GRAVITATORIO (GRAVITY MAGE - REFERENCE 4: Cosmic Hood, Singularity Staff, Orbiting Rocks & Beard)
+  // =========================================================================
+  private buildGravityMageMesh() {
+    const cosmicCloak = new THREE.Color(this.skin.bodyColor || '#2e1065'); // Deep midnight violet nebula
+    const robeColor = new THREE.Color('#1e1b4b'); // Deep cosmic indigo
+    const skinToneColor = new THREE.Color('#e2b997');
+    const beardColor = new THREE.Color('#cbd5e1'); // Silver grey beard
+    const woodColor = new THREE.Color('#3f1d0b'); // Ancient staff wood
+    const vortexColor = new THREE.Color('#7c3aed'); // Glowing cosmic singularity
+    const goldColor = new THREE.Color('#fbbf24');
+    const potionColor = new THREE.Color('#c084fc');
+    const rockColor = new THREE.Color('#64748b');
+
+    const cloakMat = new THREE.MeshLambertMaterial({ color: cosmicCloak });
+    const robeMat = new THREE.MeshLambertMaterial({ color: robeColor });
+    const skinMat = new THREE.MeshLambertMaterial({ color: skinToneColor });
+    const beardMat = new THREE.MeshLambertMaterial({ color: beardColor });
+    const woodMat = new THREE.MeshLambertMaterial({ color: woodColor });
+    const vortexMat = new THREE.MeshBasicMaterial({ color: vortexColor });
+    const blackHoleMat = new THREE.MeshBasicMaterial({ color: 0x05020a });
+    const starEyeMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
+    const goldMat = new THREE.MeshLambertMaterial({ color: goldColor });
+    const potionMat = new THREE.MeshLambertMaterial({ color: potionColor });
+    const rockMat = new THREE.MeshLambertMaterial({ color: rockColor });
+    const leatherMat = new THREE.MeshLambertMaterial({ color: 0x3d2817 });
+    const glassMat = new THREE.MeshLambertMaterial({ color: 0xe2e8f0, transparent: true, opacity: 0.8 });
+
+    // --- HEAD: Cosmic Nebula Hood + Beard + Glowing Mystic Eyes ---
+    this.headMesh = new THREE.Group();
+    this.headMesh.position.y = 1.45;
+
+    const headBase = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.6, 0.58), skinMat);
+
+    // Hood Covering Head
+    const hoodTop = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.22, 0.7), cloakMat);
+    hoodTop.position.set(0, 0.24, -0.02);
+    const hoodPeak = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.16, 0.28), cloakMat);
+    hoodPeak.position.set(0, 0.35, -0.16);
+    const hoodBack = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.55, 0.2), cloakMat);
+    hoodBack.position.set(0, 0.02, -0.27);
+    const hoodSideL = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.55, 0.62), cloakMat);
+    hoodSideL.position.set(-0.3, 0.02, 0.02);
+    const hoodSideR = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.55, 0.62), cloakMat);
+    hoodSideR.position.set(0.3, 0.02, 0.02);
+
+    // Trimmed Silver-Grey Beard & Mustache
+    const beardGeo = new THREE.BoxGeometry(0.52, 0.32, 0.16);
+    const beard = new THREE.Mesh(beardGeo, beardMat);
+    beard.position.set(0, -0.16, 0.25);
+    const mustache = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.08, 0.06), beardMat);
+    mustache.position.set(0, -0.06, 0.32);
+
+    // Glowing Starry Cyan Mystic Eyes
+    const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.06, 0.04), starEyeMat);
+    eyeL.position.set(-0.14, 0.06, 0.29);
+    const eyeR = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.06, 0.04), starEyeMat);
+    eyeR.position.set(0.14, 0.06, 0.29);
+
+    this.headMesh.add(headBase, hoodTop, hoodPeak, hoodBack, hoodSideL, hoodSideR, beard, mustache, eyeL, eyeR);
+
+    // --- TORSO: Robe, Cosmic Nebula Mantle, Belt, Potion Vial & Gold Key ---
+    this.bodyMesh = new THREE.Group();
+    this.bodyMesh.position.y = 0.78;
+
+    const robe = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.52, 0.42), robeMat);
+    robe.position.set(0, 0.12, 0);
+
+    // Leather Belt & Metal Buckle
+    const belt = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.1, 0.44), leatherMat);
+    belt.position.set(0, -0.16, 0);
+    const buckle = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.12, 0.04), goldMat);
+    buckle.position.set(0, -0.16, 0.23);
+
+    // Purple Potion Vial on Hip
+    const potGroup = new THREE.Group();
+    potGroup.position.set(0.24, -0.24, 0.22);
+    const potG = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.14, 0.1), glassMat);
+    const potL = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.09, 0.08), potionMat);
+    potGroup.add(potG, potL);
+
+    // Golden Skeleton Key on Hip
+    const keyGroup = new THREE.Group();
+    keyGroup.position.set(-0.14, -0.25, 0.22);
+    const keyS = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.15, 0.04), goldMat);
+    keyGroup.add(keyS);
+
+    // Flowing Cosmic Galaxy Cloak draped over shoulders & back
+    const cosmicCloakBack = new THREE.Mesh(new THREE.BoxGeometry(0.82, 1.0, 0.14), cloakMat);
+    cosmicCloakBack.position.set(0, -0.15, -0.25);
+    const cloakShoulderL = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.24, 0.44), cloakMat);
+    cloakShoulderL.position.set(-0.38, 0.26, -0.02);
+    const cloakShoulderR = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.24, 0.44), cloakMat);
+    cloakShoulderR.position.set(0.38, 0.26, -0.02);
+
+    // Tattered wizard robe hem
+    const robeHem = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.28, 0.44), robeMat);
+    robeHem.position.set(0, -0.34, 0);
+
+    this.bodyMesh.add(robe, belt, buckle, potGroup, keyGroup, cosmicCloakBack, cloakShoulderL, cloakShoulderR, robeHem);
+
+    // --- ARMS: Singularity Staff (Right) & Telekinetic Orbiting Meteorites (Left) ---
+    const armGeo = new THREE.BoxGeometry(0.2, 0.36, 0.2);
+
+    // RIGHT ARM + Ancient Singularity Staff
+    this.rightArmMesh = new THREE.Group();
+    this.rightArmMesh.position.set(0.48, 0.88, 0);
+    const rightArm = new THREE.Mesh(armGeo, robeMat);
+    rightArm.position.set(0, -0.14, 0);
+
+    const staffGroup = this.createSingularityStaff(woodMat, vortexMat, blackHoleMat, rockMat);
+    staffGroup.position.set(0.15, -0.35, 0.2);
+    this.rightArmMesh.add(rightArm, staffGroup);
+
+    // LEFT ARM + Telekinetic Floating Orbiting Rocks
+    this.leftArmMesh = new THREE.Group();
+    this.leftArmMesh.position.set(-0.48, 0.88, 0.05);
+    const leftArm = new THREE.Mesh(armGeo, robeMat);
+    leftArm.position.set(0, -0.14, 0);
+    const handL = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.16, 0.18), skinMat);
+    handL.position.set(0, -0.36, 0.08);
+
+    // Levitating Orbiting Meteorite Rocks above hand
+    const rock1 = new THREE.Mesh(new THREE.DodecahedronGeometry(0.08, 0), rockMat);
+    rock1.position.set(0.02, 0.16, 0.12);
+    const rock2 = new THREE.Mesh(new THREE.DodecahedronGeometry(0.06, 0), rockMat);
+    rock2.position.set(-0.12, 0.22, 0.06);
+    const rock3 = new THREE.Mesh(new THREE.DodecahedronGeometry(0.07, 0), rockMat);
+    rock3.position.set(0.1, 0.26, -0.04);
+    handL.add(rock1, rock2, rock3);
+
+    this.leftArmMesh.add(leftArm, handL);
+
+    // --- LEGS & WIZARD BOOTS ---
+    const legGeo = new THREE.BoxGeometry(0.22, 0.26, 0.22);
+    const bootGeo = new THREE.BoxGeometry(0.26, 0.32, 0.32);
+
+    this.leftLegMesh = new THREE.Group();
+    this.leftLegMesh.position.set(-0.18, 0.44, 0);
+    const legL = new THREE.Mesh(legGeo, robeMat);
+    legL.position.set(0, -0.1, 0);
+    const bootL = new THREE.Mesh(bootGeo, leatherMat);
+    bootL.position.set(0, -0.32, 0.03);
+    this.leftLegMesh.add(legL, bootL);
+
+    this.rightLegMesh = new THREE.Group();
+    this.rightLegMesh.position.set(0.18, 0.44, 0);
+    const legR = new THREE.Mesh(legGeo, robeMat);
+    legR.position.set(0, -0.1, 0);
+    const bootR = new THREE.Mesh(bootGeo, leatherMat);
+    bootR.position.set(0, -0.32, 0.03);
+    this.rightLegMesh.add(legR, bootR);
+
+    this.group.add(this.headMesh, this.bodyMesh, this.leftArmMesh, this.rightArmMesh, this.leftLegMesh, this.rightLegMesh);
+  }
+
+  // =========================================================================
+  // 5. ARTIFICIERO TRAMPERO (TRAPSTER - REFERENCE 5: Slicked Grey Hair/Beard, Studded Mantle, Detonator T-Plunger & Mines)
+  // =========================================================================
+  private buildTrapsterMesh() {
+    const trenchColor = new THREE.Color(this.skin.bodyColor || '#1b321c'); // Dark military olive trenchcoat
+    const leatherColor = new THREE.Color('#452613'); // Studded leather mantle
+    const hairColor = new THREE.Color('#94a3b8'); // Silver-grey slicked hair
+    const skinToneColor = new THREE.Color('#e0b188');
+    const goldColor = new THREE.Color('#fbbf24');
+    const brassColor = new THREE.Color('#d97706');
+    const steelColor = new THREE.Color('#475569');
+
+    const trenchMat = new THREE.MeshLambertMaterial({ color: trenchColor });
+    const leatherMat = new THREE.MeshLambertMaterial({ color: leatherColor });
+    const hairMat = new THREE.MeshLambertMaterial({ color: hairColor });
+    const skinMat = new THREE.MeshLambertMaterial({ color: skinToneColor });
+    const goldMat = new THREE.MeshLambertMaterial({ color: goldColor });
+    const brassMat = new THREE.MeshLambertMaterial({ color: brassColor });
+    const steelMat = new THREE.MeshLambertMaterial({ color: steelColor });
+    const ledRedMat = new THREE.MeshBasicMaterial({ color: 0xef4444 });
+    const ledGreenMat = new THREE.MeshBasicMaterial({ color: 0x22c55e });
+
+    // --- HEAD: Slicked-Back Grey Hair + Defined Grey Beard & Mustache ---
+    this.headMesh = new THREE.Group();
+    this.headMesh.position.y = 1.46;
+
+    const headBase = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.62, 0.6), skinMat);
+
+    // Slicked Hair Cap
+    const hairTop = new THREE.Mesh(new THREE.BoxGeometry(0.66, 0.2, 0.68), hairMat);
+    hairTop.position.set(0, 0.24, -0.02);
+    const hairBack = new THREE.Mesh(new THREE.BoxGeometry(0.64, 0.4, 0.16), hairMat);
+    hairBack.position.set(0, 0.06, -0.27);
+    const hairSidesL = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.32, 0.46), hairMat);
+    hairSidesL.position.set(-0.29, 0.1, -0.04);
+    const hairSidesR = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.32, 0.46), hairMat);
+    hairSidesR.position.set(0.29, 0.1, -0.04);
+
+    // Trimmed Demolitionist Beard & Mustache
+    const beard = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.26, 0.16), hairMat);
+    beard.position.set(0, -0.16, 0.25);
+    const mustache = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.08, 0.08), hairMat);
+    mustache.position.set(0, -0.06, 0.32);
+
+    // Eyes
+    const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.06, 0.04), new THREE.MeshBasicMaterial({ color: 0x18181b }));
+    eyeL.position.set(-0.15, 0.04, 0.31);
+    const eyeR = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.06, 0.04), new THREE.MeshBasicMaterial({ color: 0x18181b }));
+    eyeR.position.set(0.15, 0.04, 0.31);
+
+    this.headMesh.add(headBase, hairTop, hairBack, hairSidesL, hairSidesR, beard, mustache, eyeL, eyeR);
+
+    // --- TORSO: Trenchcoat, Studded Leather Mantle, Gold Chain, Detonator & Key ---
+    this.bodyMesh = new THREE.Group();
+    this.bodyMesh.position.y = 0.78;
+
+    const coat = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.52, 0.44), trenchMat);
+    coat.position.set(0, 0.14, 0);
+
+    // Studded Brown Leather Shoulder Mantle / Pauldrons with Gold Rivets
+    const mantleL = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.22, 0.46), leatherMat);
+    mantleL.position.set(-0.42, 0.28, 0);
+    const rivet1 = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.06, 0.48), goldMat);
+    rivet1.position.set(-0.42, 0.3, 0);
+
+    const mantleR = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.22, 0.46), leatherMat);
+    mantleR.position.set(0.42, 0.28, 0);
+    const rivet2 = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.06, 0.48), goldMat);
+    rivet2.position.set(0.42, 0.3, 0);
+
+    // Gold Chain Clasp at collar
+    const collarChain = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.06, 0.06), goldMat);
+    collarChain.position.set(0, 0.32, 0.24);
+
+    // Cross-body Ammo Strap
+    const strap = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.54, 0.46), leatherMat);
+    strap.rotation.z = -0.38;
+    strap.position.set(0, 0.14, 0.01);
+
+    // Heavy Utility Belt
+    const belt = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.1, 0.46), leatherMat);
+    belt.position.set(0, -0.16, 0);
+    const buckle = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.12, 0.04), brassMat);
+    buckle.position.set(0, -0.16, 0.24);
+
+    // Electronic Clockwork Detonator Device with LED Lights on hip
+    const detonatorDevice = new THREE.Group();
+    detonatorDevice.position.set(0.24, -0.22, 0.24);
+    const deviceBody = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.16, 0.08), steelMat);
+    const ledR = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.04, 0.04), ledRedMat);
+    ledR.position.set(-0.03, 0.04, 0.05);
+    const ledG = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.04, 0.04), ledGreenMat);
+    ledG.position.set(0.03, 0.04, 0.05);
+    detonatorDevice.add(deviceBody, ledR, ledG);
+
+    // Dangling Gold Skeleton Key & Ammo Pouch on hip
+    const pouch = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.14, 0.1), leatherMat);
+    pouch.position.set(-0.25, -0.22, 0.22);
+    const keyS = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.14, 0.04), goldMat);
+    keyS.position.set(-0.12, -0.24, 0.23);
+
+    // Flowing Tattered Demolition Cloak
+    const cloak = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.98, 0.14), trenchMat);
+    cloak.position.set(0, -0.14, -0.26);
+
+    // Trenchcoat Jagged Lower Hem
+    const hem = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.26, 0.46), trenchMat);
+    hem.position.set(0, -0.34, 0);
+
+    this.bodyMesh.add(coat, mantleL, rivet1, mantleR, rivet2, collarChain, strap, belt, buckle, detonatorDevice, pouch, keyS, cloak, hem);
+
+    // --- ARMS: Classic T-Bar Dynamite Detonator Box (Left) & Land Mine (Right) ---
+    const armGeo = new THREE.BoxGeometry(0.22, 0.36, 0.22);
+
+    // LEFT ARM + Wooden/Brass T-Bar Plunger Detonator Box
+    this.leftArmMesh = new THREE.Group();
+    this.leftArmMesh.position.set(-0.5, 0.88, 0.05);
+    const leftArm = new THREE.Mesh(armGeo, trenchMat);
+    leftArm.position.set(0, -0.14, 0);
+    const gauntletL = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.2, 0.26), leatherMat);
+    gauntletL.position.set(0, -0.3, 0);
+
+    const plungerBox = this.createTBarPlungerMesh(leatherMat, brassMat);
+    plungerBox.position.set(-0.02, -0.38, 0.22);
+    this.leftArmMesh.add(leftArm, gauntletL, plungerBox);
+
+    // RIGHT ARM + Demolition Mine Throw Arm
+    this.rightArmMesh = new THREE.Group();
+    this.rightArmMesh.position.set(0.5, 0.88, 0);
+    const rightArm = new THREE.Mesh(armGeo, trenchMat);
+    rightArm.position.set(0, -0.14, 0);
+    const gauntletR = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.2, 0.26), leatherMat);
+    gauntletR.position.set(0, -0.3, 0);
+
+    const mineHand = this.createProximityMineMesh(steelMat, brassMat, ledRedMat, ledGreenMat);
+    mineHand.position.set(0.04, -0.42, 0.16);
+    this.rightArmMesh.add(rightArm, gauntletR, mineHand);
+
+    // --- LEGS: Dark Combat Pants & Strapped Engineer Boots ---
+    const legGeo = new THREE.BoxGeometry(0.22, 0.26, 0.22);
+    const bootGeo = new THREE.BoxGeometry(0.26, 0.32, 0.32);
+
+    this.leftLegMesh = new THREE.Group();
+    this.leftLegMesh.position.set(-0.18, 0.44, 0);
+    const legL = new THREE.Mesh(legGeo, new THREE.MeshLambertMaterial({ color: 0x1e293b }));
+    legL.position.set(0, -0.1, 0);
+    const bootL = new THREE.Mesh(bootGeo, leatherMat);
+    bootL.position.set(0, -0.32, 0.03);
+    this.leftLegMesh.add(legL, bootL);
+
+    this.rightLegMesh = new THREE.Group();
+    this.rightLegMesh.position.set(0.18, 0.44, 0);
+    const legR = new THREE.Mesh(legGeo, new THREE.MeshLambertMaterial({ color: 0x1e293b }));
+    legR.position.set(0, -0.1, 0);
+    const bootR = new THREE.Mesh(bootGeo, leatherMat);
+    bootR.position.set(0, -0.32, 0.03);
+    this.rightLegMesh.add(legR, bootR);
+
+    this.group.add(this.headMesh, this.bodyMesh, this.leftArmMesh, this.rightArmMesh, this.leftLegMesh, this.rightLegMesh);
+  }
+
+  // Helper to build Gravity Mage Singularity Staff
+  private createSingularityStaff(woodMat: THREE.Material, vortexMat: THREE.Material, blackHoleMat: THREE.Material, rockMat: THREE.Material): THREE.Group {
+    const group = new THREE.Group();
+    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.05, 1.45, 6), woodMat);
+    shaft.position.y = 0.2;
+
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.18, 0.04, 6, 12), woodMat);
+    ring.position.y = 0.95;
+
+    const singularityCore = new THREE.Mesh(new THREE.SphereGeometry(0.12, 8, 8), blackHoleMat);
+    singularityCore.position.y = 0.95;
+
+    const vortexRing = new THREE.Mesh(new THREE.TorusGeometry(0.14, 0.02, 6, 12), vortexMat);
+    vortexRing.position.y = 0.95;
+    vortexRing.rotation.x = Math.PI / 4;
+
+    const miniRock1 = new THREE.Mesh(new THREE.DodecahedronGeometry(0.04, 0), rockMat);
+    miniRock1.position.set(0.24, 1.05, 0.08);
+    const miniRock2 = new THREE.Mesh(new THREE.DodecahedronGeometry(0.04, 0), rockMat);
+    miniRock2.position.set(-0.22, 0.88, -0.06);
+
+    group.add(shaft, ring, singularityCore, vortexRing, miniRock1, miniRock2);
+    return group;
+  }
+
+  // Helper to build Classic T-Bar Dynamite Detonator Box
+  private createTBarPlungerMesh(woodMat: THREE.Material, brassMat: THREE.Material): THREE.Group {
+    const group = new THREE.Group();
+    const box = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.26, 0.16), woodMat);
+    const brassTrim = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.06, 0.18), brassMat);
+    brassTrim.position.y = -0.1;
+
+    const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.2, 6), brassMat);
+    rod.position.y = 0.18;
+
+    const tBar = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.04, 0.06), brassMat);
+    tBar.position.y = 0.28;
+
+    group.add(box, brassTrim, rod, tBar);
+    return group;
+  }
+
+  // Helper to build Proximity Land Mine
+  private createProximityMineMesh(steelMat: THREE.Material, brassMat: THREE.Material, ledRMat: THREE.Material, ledGMat: THREE.Material): THREE.Group {
+    const group = new THREE.Group();
+    const mineBody = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.18, 0.08, 8), steelMat);
+    const centerPlate = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.09, 8), brassMat);
+
+    const led1 = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.03, 0.03), ledRMat);
+    led1.position.set(-0.06, 0.05, 0.04);
+    const led2 = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.03, 0.03), ledGMat);
+    led2.position.set(0.06, 0.05, 0.04);
+
+    group.add(mineBody, centerPlate, led1, led2);
+    return group;
   }
 
   // =========================================================================
