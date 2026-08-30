@@ -204,14 +204,6 @@ export class GameEngine3D {
     this.keysPressed[e.key.toLowerCase()] = true;
     if (e.code) this.keysPressed[e.code.toLowerCase()] = true;
 
-    // Escape = Pause / Exit Game Menu
-    if (e.key === 'Escape' || e.code === 'Escape') {
-      if (this.onPauseRequested) {
-        this.onPauseRequested();
-      }
-      return;
-    }
-
     // Space = SALTO PURO (Strictly Jump, with preventDefault to avoid scrolling or button click triggers)
     if (e.code === 'Space') {
       e.preventDefault();
@@ -233,6 +225,7 @@ export class GameEngine3D {
   public requestPointerLock() {
     try {
       if (this.canvas && document.pointerLockElement !== this.canvas) {
+        this.canvas.focus?.();
         const promise = this.canvas.requestPointerLock?.();
         if (promise && typeof (promise as any).catch === 'function') {
           (promise as any).catch(() => {});

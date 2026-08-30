@@ -356,10 +356,6 @@ export default function App() {
       setIsEliminatedModalOpen(true);
     };
 
-    engine.onPauseRequested = () => {
-      handlePause();
-    };
-
     engine.onMatchEnd = (result) => {
       setIsEliminatedModalOpen(false);
       setIsSpectating(false);
@@ -527,6 +523,9 @@ export default function App() {
       engineRef.current.setPaused(false);
       setGameState('playing');
       engineRef.current.requestPointerLock();
+      setTimeout(() => {
+        engineRef.current?.requestPointerLock();
+      }, 50);
     }
   }, [gameState]);
 
@@ -534,6 +533,9 @@ export default function App() {
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' || e.code === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+
         if (isSettingsOpen) {
           setIsSettingsOpen(false);
         } else if (isShopOpen) {
@@ -554,9 +556,9 @@ export default function App() {
       }
     };
 
-    window.addEventListener('keydown', handleGlobalKeyDown);
+    window.addEventListener('keydown', handleGlobalKeyDown, true);
     return () => {
-      window.removeEventListener('keydown', handleGlobalKeyDown);
+      window.removeEventListener('keydown', handleGlobalKeyDown, true);
     };
   }, [
     isSettingsOpen,
@@ -671,6 +673,11 @@ export default function App() {
       {/* 1. THREE.JS 3D CANVAS VIEWPORT */}
       <canvas
         ref={canvasRef}
+        onClick={() => {
+          if (gameState === 'playing') {
+            engineRef.current?.requestPointerLock();
+          }
+        }}
         className="w-full h-full block cursor-crosshair focus:outline-none"
       />
 
