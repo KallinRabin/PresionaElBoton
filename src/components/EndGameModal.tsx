@@ -4,6 +4,12 @@ import { sound } from '../game/audio';
 
 interface EndGameModalProps {
   result: MatchResult;
+  isMultiplayer?: boolean;
+  rematchVotesCount?: number;
+  rematchTotalNeeded?: number;
+  hasRequestedRematch?: boolean;
+  rematchNotice?: string | null;
+  onRequestRematch?: () => void;
   onRematch: () => void;
   onGoToMenu: () => void;
   onOpenShop: () => void;
@@ -11,6 +17,12 @@ interface EndGameModalProps {
 
 export const EndGameModal: React.FC<EndGameModalProps> = ({
   result,
+  isMultiplayer = false,
+  rematchVotesCount = 0,
+  rematchTotalNeeded = 2,
+  hasRequestedRematch = false,
+  rematchNotice,
+  onRequestRematch,
   onRematch,
   onGoToMenu,
   onOpenShop,
@@ -115,19 +127,62 @@ export const EndGameModal: React.FC<EndGameModalProps> = ({
           </div>
         </div>
 
+        {/* REMATCH NOTICE / VOTES BANNER */}
+        {isMultiplayer && (
+          <div className="mb-3 p-2 bg-zinc-900 border border-zinc-700 text-center font-pixel-body text-xs">
+            {rematchNotice ? (
+              <span className="text-red-400 font-bold">⚠️ {rematchNotice}</span>
+            ) : hasRequestedRematch ? (
+              <span className="text-yellow-300 animate-pulse">
+                ⏳ ESPERANDO QUE TODOS LOS JUGADORES ACEPTEN ({rematchVotesCount}/{rematchTotalNeeded})
+              </span>
+            ) : (
+              <span className="text-zinc-300">
+                ¿Listos para otra ronda? Pulsa <strong>SOLICITAR REVANCHA</strong> (requiere acuerdo mutuo).
+              </span>
+            )}
+          </div>
+        )}
+
         {/* ACTION BUTTONS */}
         <div className="flex flex-col sm:flex-row items-center gap-2.5">
-          <button
-            id="endgame-btn-rematch"
-            onClick={() => {
-              sound.playButtonSlam();
-              onRematch();
-            }}
-            className="w-full sm:flex-1 pixel-btn pixel-box-red py-3 text-sm font-pixel-heading text-yellow-200 flex items-center justify-center gap-2 hover:scale-[1.02]"
-          >
-            <span>▶</span>
-            <span>OTRA BATALLA</span>
-          </button>
+          {isMultiplayer ? (
+            <button
+              id="endgame-btn-rematch"
+              onClick={() => {
+                if (!hasRequestedRematch && onRequestRematch) {
+                  sound.playButtonSlam();
+                  onRequestRematch();
+                }
+              }}
+              disabled={hasRequestedRematch}
+              className={`w-full sm:flex-1 pixel-btn py-3 text-xs sm:text-sm font-pixel-heading flex items-center justify-center gap-2 ${
+                hasRequestedRematch
+                  ? 'pixel-box-dark text-yellow-300 border-amber-400 animate-pulse cursor-not-allowed'
+                  : 'pixel-box-red text-yellow-200 hover:scale-[1.02]'
+              }`}
+            >
+              <span>⚔️</span>
+              <span>
+                {hasRequestedRematch
+                  ? `REVANCHA SOLICITADA (${rematchVotesCount}/${rematchTotalNeeded})`
+                  : 'SOLICITAR REVANCHA'}
+              </span>
+            </button>
+          ) : (
+            <button
+              id="endgame-btn-rematch"
+              onClick={() => {
+                sound.playButtonSlam();
+                onRematch();
+              }}
+              className="w-full sm:flex-1 pixel-btn pixel-box-red py-3 text-sm font-pixel-heading text-yellow-200 flex items-center justify-center gap-2 hover:scale-[1.02]"
+            >
+              <span>▶</span>
+              <span>OTRA BATALLA</span>
+            </button>
+          )}
+
           <button
             id="endgame-btn-shop"
             onClick={() => {
@@ -138,6 +193,7 @@ export const EndGameModal: React.FC<EndGameModalProps> = ({
           >
             🛒 TIENDA
           </button>
+
           <button
             id="endgame-btn-menu"
             onClick={() => {

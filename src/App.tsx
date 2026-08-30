@@ -181,6 +181,12 @@ export default function App() {
   const [isMultiplayerLobbyOpen, setIsMultiplayerLobbyOpen] = useState(false);
   const [activeRoom, setActiveRoom] = useState<RoomInfo | null>(null);
 
+  // Multiplayer Rematch States
+  const [rematchVotesCount, setRematchVotesCount] = useState<number>(0);
+  const [rematchTotalNeeded, setRematchTotalNeeded] = useState<number>(2);
+  const [hasRequestedRematch, setHasRequestedRematch] = useState<boolean>(false);
+  const [rematchNotice, setRematchNotice] = useState<string | null>(null);
+
   // Check touch device support
   const isTouchDevice = typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
 
@@ -431,6 +437,11 @@ export default function App() {
       setIsMultiplayerLobbyOpen(false);
       setActiveRoom(null);
 
+      // Reset Rematch States
+      setHasRequestedRematch(false);
+      setRematchVotesCount(0);
+      setRematchNotice(null);
+
       engineRef.current.setParticleEffectsEnabled(settings.particlesEnabled !== false);
       engineRef.current.setCameraSensitivity(settings.cameraSensitivity || 1.0);
 
@@ -482,6 +493,19 @@ export default function App() {
     networkManager.onGameStartCallback = (room, spawns) => {
       handleStartMultiplayerGame(room, spawns);
     };
+
+    networkManager.onRematchUpdateCallback = (data) => {
+      setRematchVotesCount(data.votesCount);
+      setRematchTotalNeeded(data.totalNeeded);
+      setHasRequestedRematch(data.agreedPlayerIds.includes(networkManager.localPlayerId));
+      setRematchNotice(null);
+    };
+
+    networkManager.onRematchCancelledCallback = (data) => {
+      setRematchNotice(data.reason);
+      setHasRequestedRematch(false);
+      setRematchVotesCount(0);
+    };
   }, [handleStartMultiplayerGame]);
 
   // Pause / Resume
@@ -501,6 +525,10 @@ export default function App() {
 
   const handleGoToMenu = useCallback(() => {
     if (engineRef.current) {
+      if (engineRef.current.isMultiplayer) {
+        networkManager.cancelRematch();
+        networkManager.leaveRoom();
+      }
       engineRef.current.setPaused(true);
       engineRef.current.setSpectating(false);
     }
@@ -511,6 +539,9 @@ export default function App() {
     }
     setIsEliminatedModalOpen(false);
     setIsSpectating(false);
+    setHasRequestedRematch(false);
+    setRematchVotesCount(0);
+    setRematchNotice(null);
     setGameState('menu');
   }, [settings.musicEnabled]);
 
@@ -704,6 +735,12 @@ export default function App() {
       {gameState === 'gameover' && matchResult && (
         <EndGameModal
           result={matchResult}
+          isMultiplayer={engineRef.current?.isMultiplayer || false}
+          rematchVotesCount={rematchVotesCount}
+          rematchTotalNeeded={rematchTotalNeeded}
+          hasRequestedRematch={hasRequestedRematch}
+          rematchNotice={rematchNotice}
+          onRequestRematch={() => networkManager.requestRematch()}
           onRematch={handleStartGame}
           onGoToMenu={handleGoToMenu}
           onOpenShop={() => setIsShopOpen(true)}

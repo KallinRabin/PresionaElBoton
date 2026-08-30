@@ -19,6 +19,8 @@ export class NetworkManager {
   public onItemPickupCallback?: (data: any) => void;
   public onPlayerKOCallback?: (data: any) => void;
   public onMatchEndCallback?: (data: any) => void;
+  public onRematchUpdateCallback?: (data: { votesCount: number; totalNeeded: number; agreedPlayerIds: string[] }) => void;
+  public onRematchCancelledCallback?: (data: { reason: string }) => void;
   public onErrorCallback?: (message: string) => void;
   public onConnectStatusChange?: (connected: boolean) => void;
 
@@ -145,6 +147,22 @@ export class NetworkManager {
         if (this.onMatchEndCallback) this.onMatchEndCallback(data);
         break;
 
+      case 'REMATCH_UPDATE':
+        if (this.onRematchUpdateCallback) {
+          this.onRematchUpdateCallback({
+            votesCount: data.votesCount,
+            totalNeeded: data.totalNeeded,
+            agreedPlayerIds: data.agreedPlayerIds,
+          });
+        }
+        break;
+
+      case 'REMATCH_CANCELLED':
+        if (this.onRematchCancelledCallback) {
+          this.onRematchCancelledCallback({ reason: data.reason });
+        }
+        break;
+
       case 'ERROR':
         if (this.onErrorCallback) this.onErrorCallback(data.message);
         break;
@@ -195,6 +213,14 @@ export class NetworkManager {
   public leaveRoom() {
     this.send({ type: 'LEAVE_ROOM' });
     this.currentRoom = null;
+  }
+
+  public requestRematch() {
+    this.send({ type: 'REMATCH_REQUEST' });
+  }
+
+  public cancelRematch() {
+    this.send({ type: 'REMATCH_CANCEL' });
   }
 
   public sendPlayerState(state: PlayerNetState) {
