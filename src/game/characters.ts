@@ -59,6 +59,7 @@ export class Character3D {
   // UI / HUD Event Notifications
   public onStealEvent?: (isRobber: boolean, amount: number, otherName: string) => void;
   public onShieldBreakEvent?: () => void;
+  public onReflectEvent?: (otherName: string, isReflector: boolean) => void;
 
   // Animation Timers
   private walkCycle: number = 0;
@@ -732,14 +733,28 @@ export class Character3D {
       return;
     }
 
-    // Check Reflect Shield (Iron Guardian)
+    // Check Reflect Shield (Iron Guardian - Auto-Reflect rival abilities & attacks back to caster)
     if (this.stats.hasReflectShield) {
       this.particles.createHitSparks(this.group.position, true);
-      // Reflect back to attacker
-      const reflectDir = new THREE.Vector3()
-        .subVectors(attacker.group.position, this.group.position)
-        .normalize();
-      attacker.receiveHit(this, baseDamage * 0.5, baseKnockback * 1.4, true);
+      this.particles.createSparkles(this.group.position, '#38bdf8');
+      sound.playParryClang();
+
+      // Reverse ice freeze state if attacker struck with ice punch
+      if (attacker.hasIceCharge) {
+        attacker.applyFreeze(1.2);
+        attacker.hasIceCharge = false;
+        attacker.stats.hasIceCharged = false;
+      }
+
+      if (this.onReflectEvent) {
+        this.onReflectEvent(attacker.stats.name, true);
+      }
+      if (attacker.onReflectEvent) {
+        attacker.onReflectEvent(this.stats.name, false);
+      }
+
+      // Reflect full damage & amplified knockback back onto attacker
+      attacker.receiveHit(this, baseDamage * 1.0, baseKnockback * 1.6, true);
       return;
     }
 

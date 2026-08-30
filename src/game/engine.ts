@@ -407,6 +407,15 @@ export class GameEngine3D {
           this.emitBattleNotification('🛡️', '¡Escudo absorbió el golpe!', 'Tu barrera se rompió tras protegerte', '#06b6d4');
         }
       };
+      char.onReflectEvent = (otherName, isReflector) => {
+        if (char.isPlayer) {
+          if (isReflector) {
+            this.emitBattleNotification('🛡️', '¡Contragolpe Reflector!', `Devolviste el ataque a ${otherName}`, '#38bdf8');
+          } else {
+            this.emitBattleNotification('⚠️', '¡Ataque Reflejado!', `Te golpeaste contra el Escudo de ${otherName}`, '#ef4444');
+          }
+        }
+      };
     };
 
     if (isMultiplayer && roomInfo) {
@@ -854,20 +863,27 @@ export class GameEngine3D {
       }
 
       this.particleSystem.createWarpSmoke(character.group.position);
+      if (character.isPlayer) {
+        this.emitBattleNotification('🌀', '¡Paso Sombrío!', 'Teletransporte a la espalda del rival', '#8b5cf6');
+      }
       character.triggerPunch('normal');
       this.executePunchHitbox(character, true, 1.4);
     } else if (classId === 'iron_guardian') {
-      // REFLECT COUNTER: 1.8s reflect shield
+      // REFLECT COUNTER: 2.2s reflect shield with full ability and damage reversal
       sound.playParryClang();
       character.stats.hasReflectShield = true;
-      character.stats.abilityActiveTime = 1.8;
+      character.stats.abilityActiveTime = 2.2;
       this.particleSystem.createSparkles(charPos, '#38bdf8');
-      this.particleSystem.createFloatingText(charPos, '¡ESCUDO PARADA!', '#38bdf8');
+      if (character.isPlayer) {
+        this.emitBattleNotification('🛡️', '¡Escudo Reflector Total!', 'Devuelve golpes y habilidades rivales al atacante (2.2s)', '#0284c7');
+      }
     } else if (classId === 'gravity_mage') {
       // GRAVITY WAVE: 360 blast
       sound.playGravityPulse();
       this.particleSystem.createGravityPulse(charPos);
-      this.particleSystem.createFloatingText(charPos, '¡VÓRTICE!', '#10b981');
+      if (character.isPlayer) {
+        this.emitBattleNotification('🔮', '¡Pulso Gravitatorio!', 'Onda mágica de 360° repulsora', '#059669');
+      }
 
       this.allCharacters.forEach((target) => {
         if (target !== character && !target.stats.isRespawning) {
@@ -894,7 +910,9 @@ export class GameEngine3D {
         owner: character,
       });
 
-      this.particleSystem.createFloatingText(charPos, '¡MINA COLOCADA!', '#d97706');
+      if (character.isPlayer) {
+        this.emitBattleNotification('💣', '¡Mina Resorte Colocada!', 'Trampa colocada en el terreno', '#d97706');
+      }
     } else if (classId === 'pyro_fiend') {
       // INFERNO BLAST: Cone of devastating fire & sparks
       sound.playSmashPunch(true);
@@ -904,7 +922,9 @@ export class GameEngine3D {
         this.particleSystem.createHitSparks(firePos, true);
         this.particleSystem.createSparkles(firePos, '#ea580c');
       }
-      this.particleSystem.createFloatingText(charPos, '¡LLAMARADA INFERNAL!', '#ea580c');
+      if (character.isPlayer) {
+        this.emitBattleNotification('🔥', '¡Llamarada Infernal!', 'Ráfaga de fuego demoledora', '#ea580c');
+      }
 
       this.allCharacters.forEach((target) => {
         if (target !== character && !target.stats.isRespawning) {
@@ -925,9 +945,11 @@ export class GameEngine3D {
       character.stats.hasIceCharged = true;
       this.particleSystem.createSparkles(charPos, '#06b6d4');
       this.particleSystem.createSparkles(charPos, '#a5f3fc');
-      this.particleSystem.createFloatingText(charPos, '¡PUÑO HELADO CARGADO!', '#06b6d4');
+      if (character.isPlayer) {
+        this.emitBattleNotification('🧊', '¡Puño Helado Cargado!', 'El siguiente golpe congelará 1.0s', '#06b6d4');
+      }
     } else if (classId === 'cyber_ninja') {
-      // THUNDER DASH: Slices forward instantly through opponents
+      // THUNDER DASH: Slices forward instantly through opponents with amplified launch
       sound.playWarp();
       sound.playHomeRunBat();
       const dashDist = 8.5;
@@ -944,15 +966,17 @@ export class GameEngine3D {
 
       this.particleSystem.createSparkles(startPos, '#eab308');
       this.particleSystem.createSparkles(character.group.position, '#fef08a');
-      this.particleSystem.createFloatingText(character.group.position, '¡CORTE RELÁMPAGO!', '#eab308');
+      if (character.isPlayer) {
+        this.emitBattleNotification('⚡', '¡Dash Relámpago!', 'Embestida cortante con empuje devastador', '#eab308');
+      }
 
-      // Hit enemies near the dash line
+      // Hit enemies near the dash line with increased knockback (24.5)
       this.allCharacters.forEach((target) => {
         if (target !== character && !target.stats.isRespawning) {
           const distToStart = target.group.position.distanceTo(startPos);
           const distToEnd = target.group.position.distanceTo(character.group.position);
           if (distToStart < 9.0 || distToEnd < 3.5) {
-            target.receiveHit(character, 20, 18, true);
+            target.receiveHit(character, 22, 24.5, true);
           }
         }
       });
