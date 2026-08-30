@@ -577,6 +577,9 @@ export class Character3D {
 
     this.bodyMesh.add(coat, icePauldronL, iceSpike, pauldronR, belt, buckle, potGroup, keyS, pouch, cloak, hem);
 
+    // --- ARMS: Giant Crystal Glacial Battle Axe (Left) & Casting Hand (Right) ---
+    const armGeo = new THREE.BoxGeometry(0.2, 0.36, 0.2);
+
     // LEFT ARM + Massive Glacial Crystal Axe
     this.leftArmMesh = new THREE.Group();
     this.leftArmMesh.position.set(-0.48, 0.88, 0.05);
@@ -719,6 +722,9 @@ export class Character3D {
     cloak.position.set(0, -0.14, -0.24);
 
     this.bodyMesh.add(cuirass, pauldronL, pauldronR, belt, buckle, batteryCell, scabbard, cloak);
+
+    // --- ARMS: Crackling Lightning Spear (Left) & Casting Hand (Right) ---
+    const armGeo = new THREE.BoxGeometry(0.2, 0.36, 0.2);
 
     // LEFT ARM + Crackling Lightning Spear
     this.leftArmMesh = new THREE.Group();
