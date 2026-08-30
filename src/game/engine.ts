@@ -466,7 +466,9 @@ export class GameEngine3D {
         );
         attachCharEvents(remoteChar);
         const spawnIdx = spawns && spawns[p.id] !== undefined ? spawns[p.id] : 1;
+        remoteChar.isRemote = true;
         remoteChar.group.position.copy(this.world.spawnPads[spawnIdx % this.world.spawnPads.length]);
+        remoteChar.targetPosition.copy(remoteChar.group.position);
         this.scene.add(remoteChar.group);
         this.allCharacters.push(remoteChar);
         this.remoteCharacters.set(p.id, remoteChar);
@@ -531,13 +533,15 @@ export class GameEngine3D {
       const remoteChar = this.remoteCharacters.get(state.id);
       if (!remoteChar || remoteChar.stats.isEliminated) return;
 
-      remoteChar.group.position.set(state.x, state.y, state.z);
+      remoteChar.targetPosition.set(state.x, state.y, state.z);
       remoteChar.facingAngle = state.facing;
       remoteChar.velocity.set(state.vx, state.vy, state.vz);
       remoteChar.isGrounded = state.isGrounded;
       remoteChar.stats.damagePercent = state.damagePercent;
       remoteChar.stats.stocks = state.stocks;
       remoteChar.stats.coins = state.coins;
+      remoteChar.isTitan = !!state.isTitan;
+      remoteChar.stats.hasReflectShield = !!state.hasShield;
 
       if (state.isPunching && !remoteChar.isPunching) {
         remoteChar.triggerPunch(state.punchType || 'normal');
@@ -547,6 +551,30 @@ export class GameEngine3D {
       remoteChar.hasIceCharge = !!state.hasIceCharge;
       if (state.isFrozen && !remoteChar.isFrozen) {
         remoteChar.applyFreeze(1.0);
+      }
+    };
+
+    networkManager.onPlayerDisconnectedCallback = (data) => {
+      const remoteChar = this.remoteCharacters.get(data.playerId);
+      if (remoteChar && !remoteChar.stats.isEliminated) {
+        remoteChar.stats.isEliminated = true;
+        remoteChar.stats.stocks = 0;
+        this.scene.remove(remoteChar.group);
+        this.particleSystem.createSmashBlast(remoteChar.group.position);
+        this.particleSystem.createHitSparks(remoteChar.group.position, true);
+        sound.playRingOutBlast();
+        this.notifyBattleEvent(`❌ ${remoteChar.stats.name} abandonó la partida`, '#f87171');
+      }
+
+      // Check remaining active players
+      if (this.isMultiplayer) {
+        const activeAliveChars = this.allCharacters.filter((c) => !c.stats.isEliminated);
+        if (activeAliveChars.length === 1) {
+          const winner = activeAliveChars[0];
+          setTimeout(() => {
+            this.handleMatchEnd(winner, '¡Todos los rivales abandonaron la batalla!');
+          }, 800);
+        }
       }
     };
 
@@ -1272,6 +1300,14 @@ export class GameEngine3D {
   private updateCharacters(delta: number) {
     this.allCharacters.forEach((char) => {
       if (char.stats.isEliminated) return;
+
+      // Handle Remote Multiplayer Character smooth position & facing interpolation
+      if (char.isRemote) {
+        char.group.position.lerp(char.targetPosition, Math.min(1.0, delta * 24));
+        char.group.rotation.y = char.facingAngle;
+        char.update(delta);
+        return;
+      }
 
       // 1. Gravity & Vertical Movement (Floaty, readable jumps)
       char.velocity.y -= 16.5 * delta;

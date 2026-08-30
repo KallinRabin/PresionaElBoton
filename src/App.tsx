@@ -887,7 +887,7 @@ export default function App() {
       )}
 
       {/* 12. MULTIPLAYER ROOMS LOBBY MODAL */}
-      {isMultiplayerLobbyOpen && !activeRoom && (
+      {isMultiplayerLobbyOpen && !activeRoom && gameState !== 'playing' && (
         <MultiplayerLobbyModal
           playerName={playerName}
           selectedSkin={currentSkin}
@@ -898,7 +898,7 @@ export default function App() {
       )}
 
       {/* 13. PRE-MATCH WAITING ROOM LOBBY */}
-      {activeRoom && (
+      {activeRoom && gameState !== 'playing' && (
         <PreMatchLobbyModal
           room={activeRoom}
           onLeave={() => setActiveRoom(null)}

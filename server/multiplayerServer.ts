@@ -166,19 +166,36 @@ wss.on('connection', (ws: WebSocket) => {
 
   function purgePlayerFromAllRooms(playerId?: string) {
     let wasPurged = false;
+    const targetId = playerId || currentPlayerId;
     rooms.forEach((r, rId) => {
-      if (r.players.has(ws as any) || (playerId && r.players.has(playerId)) || (currentPlayerId && r.players.has(currentPlayerId))) {
-        r.players.delete(playerId || currentPlayerId || '');
-        r.rematchVotes.delete(playerId || currentPlayerId || '');
-        if (r.players.size === 0 || r.hostId === playerId || r.hostId === currentPlayerId) {
+      if (targetId && r.players.has(targetId)) {
+        const leavingP = r.players.get(targetId);
+        r.players.delete(targetId);
+        r.rematchVotes.delete(targetId);
+
+        if (r.isPlaying) {
+          broadcastToRoom(r, {
+            type: 'PLAYER_DISCONNECTED',
+            playerId: targetId,
+            playerName: leavingP?.name || 'Un jugador',
+            remainingPlayersCount: r.players.size,
+          });
+          if (r.players.size <= 1) {
+            r.isPlaying = false;
+          }
+        }
+
+        if (r.players.size === 0) {
           rooms.delete(rId);
         } else {
-          // Transfer host
-          const nextP = r.players.values().next().value;
-          if (nextP) {
-            nextP.isHost = true;
-            r.hostId = nextP.id;
-            r.hostName = nextP.name;
+          // Transfer host if host left
+          if (r.hostId === targetId) {
+            const nextP = r.players.values().next().value;
+            if (nextP) {
+              nextP.isHost = true;
+              r.hostId = nextP.id;
+              r.hostName = nextP.name;
+            }
           }
           broadcastToRoom(r, { type: 'ROOM_UPDATE', room: getPublicRoomInfo(r) });
         }
@@ -196,8 +213,21 @@ wss.on('connection', (ws: WebSocket) => {
     }
     const room = rooms.get(currentRoomId);
     if (room) {
+      const leavingP = room.players.get(currentPlayerId);
       room.players.delete(currentPlayerId);
       room.rematchVotes.delete(currentPlayerId);
+
+      if (room.isPlaying) {
+        broadcastToRoom(room, {
+          type: 'PLAYER_DISCONNECTED',
+          playerId: currentPlayerId,
+          playerName: leavingP?.name || 'Un jugador',
+          remainingPlayersCount: room.players.size,
+        });
+        if (room.players.size <= 1) {
+          room.isPlaying = false;
+        }
+      }
 
       if (room.players.size === 0) {
         rooms.delete(currentRoomId);

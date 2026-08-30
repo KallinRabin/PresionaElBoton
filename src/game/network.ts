@@ -18,6 +18,7 @@ export class NetworkManager {
   public onButtonPressCallback?: (data: any) => void;
   public onItemPickupCallback?: (data: any) => void;
   public onPlayerKOCallback?: (data: any) => void;
+  public onPlayerDisconnectedCallback?: (data: { playerId: string; playerName: string; remainingPlayersCount: number }) => void;
   public onMatchEndCallback?: (data: any) => void;
   public onRematchUpdateCallback?: (data: { votesCount: number; totalNeeded: number; agreedPlayerIds: string[] }) => void;
   public onRematchCancelledCallback?: (data: { reason: string }) => void;
@@ -141,6 +142,10 @@ export class NetworkManager {
 
       case 'PLAYER_KO':
         if (this.onPlayerKOCallback) this.onPlayerKOCallback(data);
+        break;
+
+      case 'PLAYER_DISCONNECTED':
+        if (this.onPlayerDisconnectedCallback) this.onPlayerDisconnectedCallback(data);
         break;
 
       case 'MATCH_END':

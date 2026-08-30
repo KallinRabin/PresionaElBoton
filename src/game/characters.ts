@@ -55,6 +55,8 @@ export class Character3D {
   // Multiplayer Network & Team
   public networkId?: string;
   public team?: 'red' | 'blue';
+  public isRemote: boolean = false;
+  public targetPosition: THREE.Vector3 = new THREE.Vector3();
 
   // UI / HUD Event Notifications
   public onStealEvent?: (isRobber: boolean, amount: number, otherName: string) => void;
