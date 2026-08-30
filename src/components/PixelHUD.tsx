@@ -344,25 +344,12 @@ export const PixelHUD: React.FC<PixelHUDProps> = ({
             </div>
           )}
 
-          {/* Touch Joystick / Keyboard & Mouse Look Hint */}
-          <div className="pointer-events-auto">
-            {isTouchDevice ? (
+          {/* Touch Joystick on touch devices only */}
+          {isTouchDevice && (
+            <div className="pointer-events-auto">
               <VirtualJoystick onMove={onJoystickMove} />
-            ) : (
-              <div className="pixel-box-dark p-2 bg-black/85 hidden sm:block border-zinc-700/80 shadow-lg">
-                <div className="text-[8px] sm:text-[9px] font-pixel-body text-zinc-300 space-y-1">
-                  <div className="flex items-center gap-1.5 text-sky-300 font-bold">
-                    <span>🖱️</span>
-                    <span>Mover Ratón: Girar Cámara / Apuntar</span>
-                  </div>
-                  <div><span className="text-yellow-300">[W,A,S,D]</span> Moverse hacia la mira</div>
-                  <div><span className="text-emerald-400">[ESPACIO]</span> Saltar / Doble Salto Aéreo</div>
-                  <div><span className="text-red-400">[Click Izq / F]</span> Golpe de Guante (Robo)</div>
-                  <div><span className="text-purple-400">[E]</span> Habilidad: {playerClass.ability.name}</div>
-                </div>
-              </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* RIGHT: Action & Class Ability Buttons */}
