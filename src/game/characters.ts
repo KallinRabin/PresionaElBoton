@@ -322,9 +322,526 @@ export class Character3D {
       this.buildGravityMageMesh();
     } else if (this.stats.classId === 'trapster') {
       this.buildTrapsterMesh();
+    } else if (this.stats.classId === 'pyro_fiend') {
+      this.buildPyroFiendMesh();
+    } else if (this.stats.classId === 'frost_valkyrie') {
+      this.buildFrostValkyrieMesh();
+    } else if (this.stats.classId === 'cyber_ninja') {
+      this.buildCyberNinjaMesh();
     } else {
       this.buildBrawlerMesh();
     }
+  }
+
+  // =========================================================================
+  // 6. PIRO-MAGO ÍGNEO (PYRO FIEND - REFERENCE 6: Fire Staff, Floating Flame, Auburn Hair/Beard, Fire Potion)
+  // =========================================================================
+  private buildPyroFiendMesh() {
+    const tunicColor = new THREE.Color(this.skin.bodyColor || '#273729'); // Dark forest robe
+    const hairColor = new THREE.Color('#5c2410'); // Auburn brown hair/beard
+    const skinToneColor = new THREE.Color('#e2b997');
+    const woodColor = new THREE.Color('#3f1d0b');
+    const flameCore = new THREE.Color('#fef08a'); // Bright yellow core
+    const flameOrange = new THREE.Color('#f97316'); // Fiery orange
+    const goldColor = new THREE.Color('#fbbf24');
+    const potionColor = new THREE.Color('#ea580c'); // Molten fire elixir
+    const leatherColor = new THREE.Color('#3d2817');
+
+    const tunicMat = new THREE.MeshLambertMaterial({ color: tunicColor });
+    const hairMat = new THREE.MeshLambertMaterial({ color: hairColor });
+    const skinMat = new THREE.MeshLambertMaterial({ color: skinToneColor });
+    const woodMat = new THREE.MeshLambertMaterial({ color: woodColor });
+    const flameCoreMat = new THREE.MeshBasicMaterial({ color: flameCore });
+    const flameOrangeMat = new THREE.MeshBasicMaterial({ color: flameOrange });
+    const goldMat = new THREE.MeshLambertMaterial({ color: goldColor });
+    const potionMat = new THREE.MeshBasicMaterial({ color: potionColor });
+    const leatherMat = new THREE.MeshLambertMaterial({ color: leatherColor });
+    const glassMat = new THREE.MeshLambertMaterial({ color: 0xe2e8f0, transparent: true, opacity: 0.8 });
+
+    // --- HEAD: Styled Auburn Hair + Trimmed Beard & Folded Hood Collar ---
+    this.headMesh = new THREE.Group();
+    this.headMesh.position.y = 1.46;
+
+    const headBase = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.62, 0.6), skinMat);
+
+    // Auburn Hair Cap
+    const hairTop = new THREE.Mesh(new THREE.BoxGeometry(0.66, 0.22, 0.66), hairMat);
+    hairTop.position.set(0, 0.24, -0.01);
+    const hairBack = new THREE.Mesh(new THREE.BoxGeometry(0.64, 0.4, 0.16), hairMat);
+    hairBack.position.set(0, 0.06, -0.27);
+    const hairSideL = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.32, 0.46), hairMat);
+    hairSideL.position.set(-0.29, 0.1, -0.04);
+    const hairSideR = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.32, 0.46), hairMat);
+    hairSideR.position.set(0.29, 0.1, -0.04);
+
+    // Beard & Mustache
+    const beard = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.26, 0.16), hairMat);
+    beard.position.set(0, -0.16, 0.25);
+    const mustache = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.08, 0.08), hairMat);
+    mustache.position.set(0, -0.06, 0.32);
+
+    // Eyes
+    const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.06, 0.04), new THREE.MeshBasicMaterial({ color: 0x18181b }));
+    eyeL.position.set(-0.15, 0.04, 0.31);
+    const eyeR = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.06, 0.04), new THREE.MeshBasicMaterial({ color: 0x18181b }));
+    eyeR.position.set(0.15, 0.04, 0.31);
+
+    // Folded Hood Collar around neck
+    const hoodCollar = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.16, 0.72), tunicMat);
+    hoodCollar.position.set(0, -0.3, 0);
+
+    this.headMesh.add(headBase, hairTop, hairBack, hairSideL, hairSideR, beard, mustache, eyeL, eyeR, hoodCollar);
+
+    // --- TORSO: Dark Tunic, Folded Cape, Belt with Molten Fire Potion & Key ---
+    this.bodyMesh = new THREE.Group();
+    this.bodyMesh.position.y = 0.78;
+
+    const coat = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.52, 0.42), tunicMat);
+    coat.position.set(0, 0.12, 0);
+
+    // Leather Belt & Buckle
+    const belt = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.1, 0.44), leatherMat);
+    belt.position.set(0, -0.16, 0);
+    const buckle = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.12, 0.04), goldMat);
+    buckle.position.set(0, -0.16, 0.23);
+
+    // Glowing Molten Fire Potion Flask
+    const potGroup = new THREE.Group();
+    potGroup.position.set(0.24, -0.24, 0.22);
+    const potG = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.14, 0.1), glassMat);
+    const potL = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.09, 0.08), potionMat);
+    potGroup.add(potG, potL);
+
+    // Gold Skeleton Key & Pouch on hip
+    const keyS = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.15, 0.04), goldMat);
+    keyS.position.set(-0.12, -0.25, 0.23);
+    const pouch = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.14, 0.1), leatherMat);
+    pouch.position.set(-0.24, -0.22, 0.22);
+
+    // Flowing Tattered Pyromancer Cloak
+    const cloak = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.98, 0.14), tunicMat);
+    cloak.position.set(0, -0.15, -0.25);
+
+    // Tattered hem
+    const hem = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.26, 0.44), tunicMat);
+    hem.position.set(0, -0.34, 0);
+
+    this.bodyMesh.add(coat, belt, buckle, potGroup, keyS, pouch, cloak, hem);
+
+    // --- ARMS: Fiery Molten Staff (Right) & Floating Fireball (Left) ---
+    const armGeo = new THREE.BoxGeometry(0.2, 0.36, 0.2);
+
+    // RIGHT ARM + Molten Fire Staff
+    this.rightArmMesh = new THREE.Group();
+    this.rightArmMesh.position.set(0.48, 0.88, 0);
+    const rightArm = new THREE.Mesh(armGeo, tunicMat);
+    rightArm.position.set(0, -0.14, 0);
+    const handR = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.16, 0.18), skinMat);
+    handR.position.set(0, -0.36, 0.08);
+
+    const fireStaff = this.createFireStaffMesh(woodMat, flameCoreMat, flameOrangeMat);
+    fireStaff.position.set(0.08, -0.35, 0.15);
+    this.rightArmMesh.add(rightArm, handR, fireStaff);
+
+    // LEFT ARM + Floating Flame Sphere
+    this.leftArmMesh = new THREE.Group();
+    this.leftArmMesh.position.set(-0.48, 0.88, 0.05);
+    const leftArm = new THREE.Mesh(armGeo, tunicMat);
+    leftArm.position.set(0, -0.14, 0);
+    const handL = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.16, 0.18), skinMat);
+    handL.position.set(0, -0.36, 0.08);
+
+    const fireball = new THREE.Mesh(new THREE.OctahedronGeometry(0.1, 0), flameCoreMat);
+    fireball.position.set(0, 0.18, 0.08);
+    const flameHalo = new THREE.Mesh(new THREE.DodecahedronGeometry(0.14, 0), flameOrangeMat);
+    flameHalo.position.set(0, 0.18, 0.08);
+    handL.add(fireball, flameHalo);
+
+    this.leftArmMesh.add(leftArm, handL);
+
+    // --- LEGS & BOOTS ---
+    const legGeo = new THREE.BoxGeometry(0.22, 0.26, 0.22);
+    const bootGeo = new THREE.BoxGeometry(0.26, 0.32, 0.32);
+
+    this.leftLegMesh = new THREE.Group();
+    this.leftLegMesh.position.set(-0.18, 0.44, 0);
+    const legL = new THREE.Mesh(legGeo, tunicMat);
+    legL.position.set(0, -0.1, 0);
+    const bootL = new THREE.Mesh(bootGeo, leatherMat);
+    bootL.position.set(0, -0.32, 0.03);
+    this.leftLegMesh.add(legL, bootL);
+
+    this.rightLegMesh = new THREE.Group();
+    this.rightLegMesh.position.set(0.18, 0.44, 0);
+    const legR = new THREE.Mesh(legGeo, tunicMat);
+    legR.position.set(0, -0.1, 0);
+    const bootR = new THREE.Mesh(bootGeo, leatherMat);
+    bootR.position.set(0, -0.32, 0.03);
+    this.rightLegMesh.add(legR, bootR);
+
+    this.group.add(this.headMesh, this.bodyMesh, this.leftArmMesh, this.rightArmMesh, this.leftLegMesh, this.rightLegMesh);
+  }
+
+  // =========================================================================
+  // 7. VALQUIRIA GLACIAL (FROST VALKYRIE - REFERENCE 7: Braided Ice Hair, Crystal Axe & Frost Orb)
+  // =========================================================================
+  private buildFrostValkyrieMesh() {
+    const tunicColor = new THREE.Color(this.skin.bodyColor || '#155e75'); // Dark glacial teal
+    const hairColor = new THREE.Color('#f1f5f9'); // Pure ice-white braided hair
+    const skinToneColor = new THREE.Color('#e8c5ac');
+    const iceCyan = new THREE.Color('#38bdf8'); // Glacial ice crystal
+    const frostWhite = new THREE.Color('#f0f9ff');
+    const goldColor = new THREE.Color('#fbbf24');
+    const leatherColor = new THREE.Color('#1e293b');
+
+    const tunicMat = new THREE.MeshLambertMaterial({ color: tunicColor });
+    const hairMat = new THREE.MeshLambertMaterial({ color: hairColor });
+    const skinMat = new THREE.MeshLambertMaterial({ color: skinToneColor });
+    const iceMat = new THREE.MeshLambertMaterial({ color: iceCyan });
+    const frostMat = new THREE.MeshBasicMaterial({ color: frostWhite });
+    const goldMat = new THREE.MeshLambertMaterial({ color: goldColor });
+    const leatherMat = new THREE.MeshLambertMaterial({ color: leatherColor });
+    const glassMat = new THREE.MeshLambertMaterial({ color: 0xe2e8f0, transparent: true, opacity: 0.8 });
+
+    // --- HEAD: Ice-White Braided Hair + Glacial Cyan Eyes & Rune ---
+    this.headMesh = new THREE.Group();
+    this.headMesh.position.y = 1.46;
+
+    const headBase = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.6, 0.58), skinMat);
+
+    // Braided Hair Cap & Back
+    const hairTop = new THREE.Mesh(new THREE.BoxGeometry(0.66, 0.22, 0.66), hairMat);
+    hairTop.position.set(0, 0.24, -0.01);
+    const hairBack = new THREE.Mesh(new THREE.BoxGeometry(0.64, 0.44, 0.16), hairMat);
+    hairBack.position.set(0, 0.04, -0.27);
+
+    // Twin Front Side Braids
+    const braidL = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.44, 0.14), hairMat);
+    braidL.position.set(-0.26, -0.08, 0.22);
+    const braidR = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.44, 0.14), hairMat);
+    braidR.position.set(0.26, -0.08, 0.22);
+
+    // Glacial Eyes & Forehead Rune
+    const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.06, 0.04), new THREE.MeshBasicMaterial({ color: 0x0284c7 }));
+    eyeL.position.set(-0.14, 0.04, 0.3);
+    const eyeR = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.06, 0.04), new THREE.MeshBasicMaterial({ color: 0x0284c7 }));
+    eyeR.position.set(0.14, 0.04, 0.3);
+    const rune = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.04), new THREE.MeshBasicMaterial({ color: 0x38bdf8 }));
+    rune.position.set(0, 0.16, 0.3);
+
+    this.headMesh.add(headBase, hairTop, hairBack, braidL, braidR, eyeL, eyeR, rune);
+
+    // --- TORSO: Glacial Tunic, Crystalline Ice Pauldrons, Belt & Flask ---
+    this.bodyMesh = new THREE.Group();
+    this.bodyMesh.position.y = 0.78;
+
+    const coat = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.52, 0.42), tunicMat);
+    coat.position.set(0, 0.12, 0);
+
+    // Crystalline Ice Spikes Shoulder Pauldron (Left Shoulder)
+    const icePauldronL = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.26, 0.46), iceMat);
+    icePauldronL.position.set(-0.42, 0.28, 0);
+    const iceSpike = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.2, 4), frostMat);
+    iceSpike.position.set(-0.42, 0.46, 0);
+
+    const pauldronR = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.22, 0.44), tunicMat);
+    pauldronR.position.set(0.42, 0.26, 0);
+
+    // Belt & Clasps
+    const belt = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.1, 0.44), leatherMat);
+    belt.position.set(0, -0.16, 0);
+    const buckle = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.12, 0.04), iceMat);
+    buckle.position.set(0, -0.16, 0.23);
+
+    // Ice Potion Flask & Key on Hip
+    const potGroup = new THREE.Group();
+    potGroup.position.set(0.24, -0.24, 0.22);
+    const potG = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.14, 0.1), glassMat);
+    const potL = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.09, 0.08), iceMat);
+    potGroup.add(potG, potL);
+
+    const keyS = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.15, 0.04), goldMat);
+    keyS.position.set(-0.12, -0.25, 0.23);
+    const pouch = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.14, 0.1), leatherMat);
+    pouch.position.set(-0.24, -0.22, 0.22);
+
+    // Frost Battle Cloak
+    const cloak = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.98, 0.14), tunicMat);
+    cloak.position.set(0, -0.15, -0.25);
+    const hem = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.26, 0.44), tunicMat);
+    hem.position.set(0, -0.34, 0);
+
+    this.bodyMesh.add(coat, icePauldronL, iceSpike, pauldronR, belt, buckle, potGroup, keyS, pouch, cloak, hem);
+
+    // --- ARMS: Giant Crystal Glacial Battle Axe (Right) & Floating Snowflake Orb (Left) ---
+    const armGeo = new THREE.BoxGeometry(0.2, 0.36, 0.2);
+
+    // RIGHT ARM + Massive Glacial Crystal Axe
+    this.rightArmMesh = new THREE.Group();
+    this.rightArmMesh.position.set(0.48, 0.88, 0);
+    const rightArm = new THREE.Mesh(armGeo, tunicMat);
+    rightArm.position.set(0, -0.14, 0);
+    const handR = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.16, 0.18), skinMat);
+    handR.position.set(0, -0.36, 0.08);
+
+    const frostAxe = this.createFrostAxeMesh(new THREE.MeshLambertMaterial({ color: 0x3f1d0b }), iceMat, frostMat);
+    frostAxe.position.set(0.1, -0.35, 0.15);
+    this.rightArmMesh.add(rightArm, handR, frostAxe);
+
+    // LEFT ARM + Floating Frost Snowflake Sphere
+    this.leftArmMesh = new THREE.Group();
+    this.leftArmMesh.position.set(-0.48, 0.88, 0.05);
+    const leftArm = new THREE.Mesh(armGeo, tunicMat);
+    leftArm.position.set(0, -0.14, 0);
+    const handL = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.16, 0.18), skinMat);
+    handL.position.set(0, -0.36, 0.08);
+
+    const frostOrb = new THREE.Mesh(new THREE.OctahedronGeometry(0.12, 0), iceMat);
+    frostOrb.position.set(0, 0.18, 0.08);
+    handL.add(frostOrb);
+
+    this.leftArmMesh.add(leftArm, handL);
+
+    // --- LEGS & FUR BOOTS ---
+    const legGeo = new THREE.BoxGeometry(0.22, 0.26, 0.22);
+    const bootGeo = new THREE.BoxGeometry(0.26, 0.32, 0.32);
+
+    this.leftLegMesh = new THREE.Group();
+    this.leftLegMesh.position.set(-0.18, 0.44, 0);
+    const legL = new THREE.Mesh(legGeo, tunicMat);
+    legL.position.set(0, -0.1, 0);
+    const bootL = new THREE.Mesh(bootGeo, leatherMat);
+    bootL.position.set(0, -0.32, 0.03);
+    this.leftLegMesh.add(legL, bootL);
+
+    this.rightLegMesh = new THREE.Group();
+    this.rightLegMesh.position.set(0.18, 0.44, 0);
+    const legR = new THREE.Mesh(legGeo, tunicMat);
+    legR.position.set(0, -0.1, 0);
+    const bootR = new THREE.Mesh(bootGeo, leatherMat);
+    bootR.position.set(0, -0.32, 0.03);
+    this.rightLegMesh.add(legR, bootR);
+
+    this.group.add(this.headMesh, this.bodyMesh, this.leftArmMesh, this.rightArmMesh, this.leftLegMesh, this.rightLegMesh);
+  }
+
+  // =========================================================================
+  // 8. NINJA CYBER-VOLT (CYBER NINJA - REFERENCE 8: Cyber Armor, Neon Circuit Lines, Lightning Spear & Volt Orb)
+  // =========================================================================
+  private buildCyberNinjaMesh() {
+    const cyberSuit = new THREE.Color(this.skin.bodyColor || '#18181b'); // Matte Black Cyber Armor
+    const neonVolt = new THREE.Color('#facc15'); // Electric Gold / Neon Voltage
+    const hairColor = new THREE.Color('#e2e8f0'); // Silver-white cyber undercut
+    const skinToneColor = new THREE.Color('#d4976c');
+    const goldColor = new THREE.Color('#fbbf24');
+
+    const suitMat = new THREE.MeshLambertMaterial({ color: cyberSuit });
+    const voltMat = new THREE.MeshBasicMaterial({ color: neonVolt });
+    const hairMat = new THREE.MeshLambertMaterial({ color: hairColor });
+    const skinMat = new THREE.MeshLambertMaterial({ color: skinToneColor });
+    const goldMat = new THREE.MeshLambertMaterial({ color: goldColor });
+    const maskMat = new THREE.MeshLambertMaterial({ color: 0x09090b });
+    const glassMat = new THREE.MeshLambertMaterial({ color: 0xe2e8f0, transparent: true, opacity: 0.8 });
+
+    // --- HEAD: Silver Cyber Undercut + High-Tech Ninja Mask ---
+    this.headMesh = new THREE.Group();
+    this.headMesh.position.y = 1.46;
+
+    const headBase = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.6, 0.58), skinMat);
+
+    // Undercut / Side-swept Silver Hair
+    const hairTop = new THREE.Mesh(new THREE.BoxGeometry(0.64, 0.22, 0.64), hairMat);
+    hairTop.position.set(0.04, 0.24, -0.01);
+    const hairSide = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.44, 0.48), hairMat);
+    hairSide.position.set(-0.28, 0.06, 0.04);
+
+    // Carbon Tech Face Mask with Neon Volt Filter
+    const mask = new THREE.Mesh(new THREE.BoxGeometry(0.54, 0.26, 0.14), maskMat);
+    mask.position.set(0, -0.12, 0.26);
+    const maskVolt = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.04, 0.04), voltMat);
+    maskVolt.position.set(0, 0, 0.08);
+    mask.add(maskVolt);
+
+    // Eyes
+    const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.06, 0.04), voltMat);
+    eyeL.position.set(-0.14, 0.04, 0.3);
+    const eyeR = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.06, 0.04), voltMat);
+    eyeR.position.set(0.14, 0.04, 0.3);
+
+    this.headMesh.add(headBase, hairTop, hairSide, mask, eyeL, eyeR);
+
+    // --- TORSO: Cyber Armor Suit with Neon Voltage Circuits ---
+    this.bodyMesh = new THREE.Group();
+    this.bodyMesh.position.y = 0.78;
+
+    const cuirass = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.52, 0.42), suitMat);
+    cuirass.position.set(0, 0.12, 0);
+
+    // Neon Voltage Circuit Lines on Chest & Abs
+    const circuitV = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.38, 0.02), voltMat);
+    circuitV.position.set(0, 0.14, 0.22);
+    const circuitH = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.05, 0.02), voltMat);
+    circuitH.position.set(0, 0.24, 0.22);
+    cuirass.add(circuitV, circuitH);
+
+    // Cyber Pauldrons with Gold Trim
+    const pauldronL = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.24, 0.46), suitMat);
+    pauldronL.position.set(-0.42, 0.28, 0);
+    const trimL = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.05, 0.48), voltMat);
+    trimL.position.set(0, 0.1, 0);
+    pauldronL.add(trimL);
+
+    const pauldronR = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.24, 0.46), suitMat);
+    pauldronR.position.set(0.42, 0.28, 0);
+    const trimR = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.05, 0.48), voltMat);
+    trimR.position.set(0, 0.1, 0);
+    pauldronR.add(trimR);
+
+    // Cyber Belt with Battery Cell & Key
+    const belt = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.1, 0.44), suitMat);
+    belt.position.set(0, -0.16, 0);
+    const buckle = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.12, 0.04), voltMat);
+    buckle.position.set(0, -0.16, 0.23);
+
+    // Glowing Volt Battery Cell on hip
+    const batteryCell = new THREE.Group();
+    batteryCell.position.set(0.24, -0.24, 0.22);
+    const batG = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.14, 0.1), glassMat);
+    const batL = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.09, 0.08), voltMat);
+    batteryCell.add(batG, batL);
+
+    // Sheathed Katana on Back
+    const scabbard = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.95, 0.08), suitMat);
+    scabbard.rotation.z = 0.55;
+    scabbard.position.set(-0.1, 0.15, -0.25);
+    const scabbardGold = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 0.1), goldMat);
+    scabbardGold.position.y = 0.45;
+    scabbard.add(scabbardGold);
+
+    // Cyber Cloak Back
+    const cloak = new THREE.Mesh(new THREE.BoxGeometry(0.78, 0.95, 0.12), suitMat);
+    cloak.position.set(0, -0.14, -0.24);
+
+    this.bodyMesh.add(cuirass, pauldronL, pauldronR, belt, buckle, batteryCell, scabbard, cloak);
+
+    // --- ARMS: Crackling Lightning Spear (Right) & Pulsating Volt Orb (Left) ---
+    const armGeo = new THREE.BoxGeometry(0.2, 0.36, 0.2);
+
+    // RIGHT ARM + Crackling Lightning Spear
+    this.rightArmMesh = new THREE.Group();
+    this.rightArmMesh.position.set(0.48, 0.88, 0);
+    const rightArm = new THREE.Mesh(armGeo, suitMat);
+    rightArm.position.set(0, -0.14, 0);
+    const gauntletR = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.2, 0.24), suitMat);
+    gauntletR.position.set(0, -0.32, 0);
+
+    const lightningSpear = this.createLightningSpearMesh(voltMat, new THREE.MeshBasicMaterial({ color: 0xffffff }));
+    lightningSpear.position.set(0.08, -0.35, 0.15);
+    this.rightArmMesh.add(rightArm, gauntletR, lightningSpear);
+
+    // LEFT ARM + Pulsating Volt Spark Orb
+    this.leftArmMesh = new THREE.Group();
+    this.leftArmMesh.position.set(-0.48, 0.88, 0.05);
+    const leftArm = new THREE.Mesh(armGeo, suitMat);
+    leftArm.position.set(0, -0.14, 0);
+    const gauntletL = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.2, 0.24), suitMat);
+    gauntletL.position.set(0, -0.32, 0);
+
+    const voltOrb = new THREE.Mesh(new THREE.DodecahedronGeometry(0.12, 0), voltMat);
+    voltOrb.position.set(0, 0.18, 0.08);
+    gauntletL.add(voltOrb);
+
+    this.leftArmMesh.add(leftArm, gauntletL);
+
+    // --- LEGS: Cyber Shin Armor with Neon Volt Lines & Shinobi Boots ---
+    const legGeo = new THREE.BoxGeometry(0.22, 0.26, 0.22);
+    const bootGeo = new THREE.BoxGeometry(0.26, 0.32, 0.32);
+
+    this.leftLegMesh = new THREE.Group();
+    this.leftLegMesh.position.set(-0.18, 0.44, 0);
+    const legL = new THREE.Mesh(legGeo, suitMat);
+    legL.position.set(0, -0.1, 0);
+    const bootL = new THREE.Mesh(bootGeo, suitMat);
+    bootL.position.set(0, -0.32, 0.03);
+    const trimBootL = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.04, 0.34), voltMat);
+    trimBootL.position.set(0, -0.14, 0.01);
+    bootL.add(trimBootL);
+    this.leftLegMesh.add(legL, bootL);
+
+    this.rightLegMesh = new THREE.Group();
+    this.rightLegMesh.position.set(0.18, 0.44, 0);
+    const legR = new THREE.Mesh(legGeo, suitMat);
+    legR.position.set(0, -0.1, 0);
+    const bootR = new THREE.Mesh(bootGeo, suitMat);
+    bootR.position.set(0, -0.32, 0.03);
+    const trimBootR = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.04, 0.34), voltMat);
+    trimBootR.position.set(0, -0.14, 0.01);
+    bootR.add(trimBootR);
+    this.rightLegMesh.add(legR, bootR);
+
+    this.group.add(this.headMesh, this.bodyMesh, this.leftArmMesh, this.rightArmMesh, this.leftLegMesh, this.rightLegMesh);
+  }
+
+  // Helper to build Pyro Fiend Flame Staff
+  private createFireStaffMesh(woodMat: THREE.Material, coreMat: THREE.Material, flameMat: THREE.Material): THREE.Group {
+    const group = new THREE.Group();
+    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.05, 1.45, 6), woodMat);
+    shaft.position.y = 0.2;
+
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.18, 0.04, 6, 12), woodMat);
+    ring.position.y = 0.95;
+
+    const magmaCore = new THREE.Mesh(new THREE.SphereGeometry(0.12, 8, 8), coreMat);
+    magmaCore.position.y = 0.95;
+
+    const flame1 = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.24, 4), flameMat);
+    flame1.position.set(0, 1.15, 0);
+    const flame2 = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.18, 4), flameMat);
+    flame2.position.set(0.14, 1.05, 0);
+    flame2.rotation.z = -0.4;
+
+    group.add(shaft, ring, magmaCore, flame1, flame2);
+    return group;
+  }
+
+  // Helper to build Glacial Crystal Battle Axe
+  private createFrostAxeMesh(haftMat: THREE.Material, iceMat: THREE.Material, frostMat: THREE.Material): THREE.Group {
+    const group = new THREE.Group();
+    const haft = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1.45, 6), haftMat);
+    haft.position.y = 0.2;
+
+    // Crystal Axe Blade (Pure carved ice crystal)
+    const bladeGeo = new THREE.BoxGeometry(0.12, 0.65, 0.45);
+    const blade = new THREE.Mesh(bladeGeo, iceMat);
+    blade.position.set(-0.22, 0.85, 0);
+
+    const bladeEdge = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.72, 0.48), frostMat);
+    bladeEdge.position.set(-0.24, 0.85, 0);
+
+    const topSpike = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.3, 4), iceMat);
+    topSpike.position.set(0, 1.05, 0);
+
+    group.add(haft, blade, bladeEdge, topSpike);
+    return group;
+  }
+
+  // Helper to build Cyber Lightning Spear
+  private createLightningSpearMesh(voltMat: THREE.Material, whiteMat: THREE.Material): THREE.Group {
+    const group = new THREE.Group();
+    const spearShaft = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1.5, 6), voltMat);
+    spearShaft.position.y = 0.2;
+
+    // Jagged Lightning Bolt Blade
+    const boltCore = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.65, 0.08), whiteMat);
+    boltCore.position.set(0, 0.95, 0);
+
+    const zig1 = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.18, 0.06), voltMat);
+    zig1.position.set(0.06, 0.85, 0);
+    const zig2 = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.18, 0.06), voltMat);
+    zig2.position.set(-0.06, 1.05, 0);
+
+    group.add(spearShaft, boltCore, zig1, zig2);
+    return group;
   }
 
   // =========================================================================

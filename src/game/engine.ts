@@ -842,6 +842,9 @@ export class GameEngine3D {
     const classDef = PLAYER_CLASSES.find((c) => c.id === character.classId) || PLAYER_CLASSES[0];
     character.stats.abilityCooldown = classDef.ability.cooldown;
 
+    // Trigger powerful right-arm forward cast / strike animation for all abilities
+    character.triggerPunch('titan');
+
     const classId = character.classId;
     const charPos = character.group.position.clone();
     if (character.isPlayer) {
@@ -851,7 +854,6 @@ export class GameEngine3D {
     if (classId === 'brawler') {
       // TITAN UPPER: Heavy charged punch with super armor
       sound.playSmashPunch(true);
-      character.triggerPunch('titan');
       this.particleSystem.createHitSparks(charPos, true);
       this.executePunchHitbox(character, true, 1.8);
     } else if (classId === 'shadow_thief') {

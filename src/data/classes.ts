@@ -100,8 +100,8 @@ export const PLAYER_CLASSES: PlayerClass[] = [
     ability: {
       id: 'spring_mine',
       name: 'MINA RESORTE BOTÍN',
-      description: 'Planta una mina en el suelo. Al ser pisada, explota lanzando al rival por los aires y desparramando su dinero.',
-      cooldown: 7.5,
+      description: 'Planta una mina en el suelo cada 3 segundos. Al ser pisada, explota lanzando al rival por los aires y desparramando su dinero.',
+      cooldown: 3.0,
       icon: '⚙️',
       color: '#b45309',
     },
