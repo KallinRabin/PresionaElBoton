@@ -70,6 +70,7 @@ export interface CharacterSkin {
   description: string;
   speedMultiplier: number;
   dashPowerMultiplier: number;
+  classId?: ClassId;
 }
 
 export interface ButtonSkin {

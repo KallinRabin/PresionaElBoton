@@ -1359,10 +1359,22 @@ export class GameEngine3D {
       if (p.y < -10.0 || distFromCenter > 38.0) {
         if (char.stats.isEliminated || char.stats.isRespawning) return;
 
-        // Decrease stock
+        // Decrease stock & lose 50% of current coins
         char.stats.stocks = Math.max(0, char.stats.stocks - 1);
         char.stats.kosSuffered++;
         char.stats.damagePercent = 0;
+
+        const coinsLost = Math.floor(char.stats.coins * 0.5);
+        if (coinsLost > 0) {
+          char.stats.coins -= coinsLost;
+          this.particleSystem.createCoinBurst(p, Math.min(16, coinsLost));
+          if (char.isPlayer) {
+            this.emitBattleNotification('⚠️', `-${coinsLost} Monedas perdidas`, 'Perdiste el 50% de tus monedas al caer', '#ef4444');
+          }
+        }
+
+        // Trigger impact freeze on KO ring-out
+        this.triggerHitStop(0.07);
 
         // Play appropriate sound & effects
         if (char.isPlayer && char.stats.stocks <= 0) {

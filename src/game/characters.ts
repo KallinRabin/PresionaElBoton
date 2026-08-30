@@ -92,7 +92,7 @@ export class Character3D {
       classId,
       className: selectedClass.name,
       classIcon: selectedClass.icon,
-      coins: 50,
+      coins: 0,
       rank: 1,
       damagePercent: 0,
       stocks: 3,

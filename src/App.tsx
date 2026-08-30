@@ -386,7 +386,8 @@ export default function App() {
       setIsEliminatedModalOpen(false);
       setIsSpectating(false);
       setMatchResult(result);
-      setTotalCoins((prev) => prev + result.coinsEarned);
+      const shopCoins = Math.max(0, Math.floor(result.coinsEarned * 0.15));
+      setTotalCoins((prev) => prev + shopCoins);
       setGameState('gameover');
 
       // Update Missions

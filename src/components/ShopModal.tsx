@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { CharacterSkin, ButtonSkin, KillBanner } from '../types';
+import { CharacterSkin, ButtonSkin, KillBanner, ClassId } from '../types';
+import { PLAYER_CLASSES } from '../data/classes';
 import { sound } from '../game/audio';
 
 interface ShopModalProps {
@@ -36,6 +37,13 @@ export const ShopModal: React.FC<ShopModalProps> = ({
   onClose,
 }) => {
   const [activeTab, setActiveTab] = useState<'characters' | 'buttons' | 'banners'>('characters');
+  const [selectedClassFilter, setSelectedClassFilter] = useState<string>('all');
+
+  const filteredSkins = skins.filter((skin) => {
+    if (selectedClassFilter === 'all') return true;
+    if (selectedClassFilter === 'special') return !skin.classId;
+    return skin.classId === selectedClassFilter;
+  });
 
   return (
     <div className="fixed inset-0 z-30 flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-sm select-none">
@@ -121,104 +129,172 @@ export const ShopModal: React.FC<ShopModalProps> = ({
 
         {/* CONTENT GRID */}
         <div className="flex-1 overflow-y-auto pr-1 space-y-3 custom-scrollbar">
-          {/* TAB 1: CHARACTERS */}
+          {/* TAB 1: CHARACTERS (SEPARATED BY CLASS / CHARACTER) */}
           {activeTab === 'characters' && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {skins.map((skin) => {
-                const isEquipped = selectedSkinId === skin.id;
-                const canAfford = totalCoins >= skin.price;
+            <div className="space-y-3">
+              {/* CHARACTER / CLASS FILTER CHIPS */}
+              <div className="flex items-center gap-1.5 pb-2 overflow-x-auto custom-scrollbar border-b border-zinc-800/80">
+                <button
+                  onClick={() => {
+                    sound.playCoin();
+                    setSelectedClassFilter('all');
+                  }}
+                  className={`px-2.5 py-1 text-[10px] font-pixel-heading whitespace-nowrap transition-all ${
+                    selectedClassFilter === 'all'
+                      ? 'bg-sky-500 text-black font-bold shadow-[0_0_8px_rgba(14,165,233,0.5)]'
+                      : 'bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-700'
+                  }`}
+                >
+                  TODOS ({skins.length})
+                </button>
 
-                const getIcon = () => {
-                  if (skin.hatType === 'crown') return '👑';
-                  if (skin.hatType === 'ninja') return '🥷';
-                  if (skin.hatType === 'antenna') return '🤖';
-                  if (skin.hatType === 'horns') return '🦖';
-                  if (skin.hatType === 'hood') return '🔮';
-                  if (skin.hatType === 'pirate') return '🏴‍☠️';
-                  return '⚔️';
-                };
+                {PLAYER_CLASSES.map((cls) => {
+                  const classSkinsCount = skins.filter((s) => s.classId === cls.id).length;
+                  return (
+                    <button
+                      key={cls.id}
+                      onClick={() => {
+                        sound.playCoin();
+                        setSelectedClassFilter(cls.id);
+                      }}
+                      className={`px-2.5 py-1 text-[10px] font-pixel-heading whitespace-nowrap flex items-center gap-1 transition-all ${
+                        selectedClassFilter === cls.id
+                          ? 'text-black font-bold shadow-[0_0_8px_rgba(255,255,255,0.4)]'
+                          : 'bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-700'
+                      }`}
+                      style={{
+                        backgroundColor: selectedClassFilter === cls.id ? cls.color : undefined,
+                      }}
+                    >
+                      <span>{cls.icon}</span>
+                      <span>{cls.name}</span>
+                      <span className="opacity-70 text-[9px]">({classSkinsCount})</span>
+                    </button>
+                  );
+                })}
 
-                return (
-                  <div
-                    key={skin.id}
-                    className={`pixel-box-dark p-3.5 flex flex-col justify-between transition-all ${
-                      isEquipped
-                        ? 'border-4 border-sky-400 bg-sky-950/40 shadow-[0_0_12px_rgba(56,189,248,0.3)]'
-                        : 'bg-zinc-900/80 hover:bg-zinc-900'
-                    }`}
-                  >
-                    <div className="flex items-start gap-3 mb-2">
-                      <div
-                        className="w-14 h-14 pixel-box-sm flex items-center justify-center text-2xl flex-shrink-0 relative shadow-inner"
-                        style={{ backgroundColor: skin.color }}
-                      >
-                        <span className="drop-shadow-md">{getIcon()}</span>
+                <button
+                  onClick={() => {
+                    sound.playCoin();
+                    setSelectedClassFilter('special');
+                  }}
+                  className={`px-2.5 py-1 text-[10px] font-pixel-heading whitespace-nowrap transition-all ${
+                    selectedClassFilter === 'special'
+                      ? 'bg-amber-400 text-black font-bold shadow-[0_0_8px_rgba(251,191,36,0.5)]'
+                      : 'bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-700'
+                  }`}
+                >
+                  👑 ESPECIALES ({skins.filter((s) => !s.classId).length})
+                </button>
+              </div>
+
+              {/* SKINS GRID */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {filteredSkins.map((skin) => {
+                  const isEquipped = selectedSkinId === skin.id;
+                  const canAfford = totalCoins >= skin.price;
+                  const skinClass = PLAYER_CLASSES.find((c) => c.id === skin.classId);
+
+                  const getIcon = () => {
+                    if (skinClass) return skinClass.icon;
+                    if (skin.hatType === 'crown') return '👑';
+                    if (skin.hatType === 'ninja') return '🥷';
+                    if (skin.hatType === 'antenna') return '🤖';
+                    if (skin.hatType === 'horns') return '🦖';
+                    if (skin.hatType === 'hood') return '🔮';
+                    if (skin.hatType === 'pirate') return '🏴‍☠️';
+                    return '⚔️';
+                  };
+
+                  return (
+                    <div
+                      key={skin.id}
+                      className={`pixel-box-dark p-3.5 flex flex-col justify-between transition-all ${
+                        isEquipped
+                          ? 'border-4 border-sky-400 bg-sky-950/40 shadow-[0_0_12px_rgba(56,189,248,0.3)]'
+                          : 'bg-zinc-900/80 hover:bg-zinc-900'
+                      }`}
+                    >
+                      <div className="flex items-start gap-3 mb-2">
                         <div
-                          className="absolute -bottom-1 -right-1 w-4 h-4 rounded-none border border-black"
-                          style={{ backgroundColor: skin.detailColor }}
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <span className="font-pixel-heading text-xs text-white">{skin.name}</span>
-                          {skin.hatType !== 'none' && (
-                            <span className="text-[9px] font-pixel-body px-1.5 py-0.5 bg-zinc-800 text-zinc-300 border border-zinc-700">
-                              3D: {skin.hatType.toUpperCase()}
+                          className="w-14 h-14 pixel-box-sm flex items-center justify-center text-2xl flex-shrink-0 relative shadow-inner"
+                          style={{ backgroundColor: skin.color }}
+                        >
+                          <span className="drop-shadow-md">{getIcon()}</span>
+                          <div
+                            className="absolute -bottom-1 -right-1 w-4 h-4 rounded-none border border-black"
+                            style={{ backgroundColor: skin.detailColor }}
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between gap-1 flex-wrap">
+                            <span className="font-pixel-heading text-xs text-white">{skin.name}</span>
+                            {skinClass ? (
+                              <span
+                                className="text-[8px] font-pixel-heading px-1.5 py-0.5 border text-black font-bold uppercase"
+                                style={{ backgroundColor: skinClass.color, borderColor: skinClass.accentColor }}
+                              >
+                                {skinClass.icon} {skinClass.name}
+                              </span>
+                            ) : (
+                              <span className="text-[8px] font-pixel-heading px-1.5 py-0.5 bg-amber-500 text-black border border-amber-300 font-bold uppercase">
+                                👑 UNIVERSAL
+                              </span>
+                            )}
+                          </div>
+                          <div className="font-pixel-body text-[11px] text-zinc-400 mt-1 leading-tight">
+                            {skin.description}
+                          </div>
+                          <div className="flex items-center gap-2 mt-2 text-[10px] font-pixel-body text-cyan-300">
+                            <span className="px-1.5 py-0.5 bg-cyan-950/60 border border-cyan-800/50">
+                              Vel: +{Math.round((skin.speedMultiplier - 1) * 100)}%
                             </span>
-                          )}
-                        </div>
-                        <div className="font-pixel-body text-[11px] text-zinc-400 mt-1 leading-tight">
-                          {skin.description}
-                        </div>
-                        <div className="flex items-center gap-2 mt-2 text-[10px] font-pixel-body text-cyan-300">
-                          <span className="px-1.5 py-0.5 bg-cyan-950/60 border border-cyan-800/50">
-                            Vel: +{Math.round((skin.speedMultiplier - 1) * 100)}%
-                          </span>
-                          <span className="px-1.5 py-0.5 bg-cyan-950/60 border border-cyan-800/50">
-                            Placaje: x{skin.dashPowerMultiplier}
-                          </span>
+                            <span className="px-1.5 py-0.5 bg-cyan-950/60 border border-cyan-800/50">
+                              Placaje: x{skin.dashPowerMultiplier}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="mt-2 pt-2 border-t border-zinc-800 flex items-center justify-between">
-                      {skin.unlocked ? (
-                        isEquipped ? (
-                          <span className="font-pixel-heading text-xs text-sky-400 flex items-center gap-1">
-                            <span>✓</span> EQUIPADO
-                          </span>
+                      <div className="mt-2 pt-2 border-t border-zinc-800 flex items-center justify-between">
+                        {skin.unlocked ? (
+                          isEquipped ? (
+                            <span className="font-pixel-heading text-xs text-sky-400 flex items-center gap-1">
+                              <span>✓</span> EQUIPADO
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() => {
+                                sound.playCoin();
+                                onEquipSkin(skin.id);
+                              }}
+                              className="pixel-btn pixel-box-blue px-3.5 py-1 text-xs font-pixel-heading text-white hover:brightness-110"
+                            >
+                              EQUIPAR
+                            </button>
+                          )
                         ) : (
                           <button
                             onClick={() => {
-                              sound.playCoin();
-                              onEquipSkin(skin.id);
+                              if (canAfford) {
+                                sound.playBigCoin();
+                                onBuySkin(skin.id);
+                              }
                             }}
-                            className="pixel-btn pixel-box-blue px-3.5 py-1 text-xs font-pixel-heading text-white hover:brightness-110"
+                            disabled={!canAfford}
+                            className={`pixel-btn pixel-box-gold px-3 py-1.5 text-xs font-pixel-heading flex items-center gap-1.5 ${
+                              !canAfford ? 'opacity-50 grayscale cursor-not-allowed' : 'text-black hover:brightness-110'
+                            }`}
                           >
-                            EQUIPAR
+                            <span>DESBLOQUEAR</span>
+                            <span>🪙 {skin.price}</span>
                           </button>
-                        )
-                      ) : (
-                        <button
-                          onClick={() => {
-                            if (canAfford) {
-                              sound.playBigCoin();
-                              onBuySkin(skin.id);
-                            }
-                          }}
-                          disabled={!canAfford}
-                          className={`pixel-btn pixel-box-gold px-3 py-1.5 text-xs font-pixel-heading flex items-center gap-1.5 ${
-                            !canAfford ? 'opacity-50 grayscale cursor-not-allowed' : 'text-black hover:brightness-110'
-                          }`}
-                        >
-                          <span>DESBLOQUEAR</span>
-                          <span>🪙 {skin.price}</span>
-                        </button>
-                      )}
+                        )}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           )}
 

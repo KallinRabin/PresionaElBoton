@@ -58,7 +58,7 @@ export const EndGameModal: React.FC<EndGameModalProps> = ({
           </div>
         </div>
 
-        {/* STATS HIGHLIGHTS (Position, Coins, KOs, Damage Dealt) */}
+        {/* STATS HIGHLIGHTS (Position, Match Coins, Shop Coins, KOs) */}
         <div className="grid grid-cols-4 gap-2 mb-4 text-center">
           {/* Position */}
           <div className="pixel-box-dark p-2 bg-black/70">
@@ -68,11 +68,19 @@ export const EndGameModal: React.FC<EndGameModalProps> = ({
             </div>
           </div>
 
-          {/* Coins Earned */}
+          {/* Match Coins */}
+          <div className="pixel-box-dark p-2 bg-black/70">
+            <div className="text-[8px] font-pixel-body text-zinc-400">EN COMBATE</div>
+            <div className="text-base sm:text-lg font-pixel-heading text-yellow-300 font-bold">
+              {result.playerCoins} 🪙
+            </div>
+          </div>
+
+          {/* Shop Coins (15%) */}
           <div className="pixel-box-gold p-2">
-            <div className="text-[8px] font-pixel-body text-amber-950 font-bold">GANANCIA</div>
+            <div className="text-[8px] font-pixel-body text-amber-950 font-bold">TIENDA (15%)</div>
             <div className="text-base sm:text-lg font-pixel-heading text-black font-bold">
-              +{result.coinsEarned} 🪙
+              +{Math.floor(result.coinsEarned * 0.15)} 🪙
             </div>
           </div>
 
@@ -81,14 +89,6 @@ export const EndGameModal: React.FC<EndGameModalProps> = ({
             <div className="text-[8px] font-pixel-body text-zinc-400">KOs SMASH</div>
             <div className="text-base sm:text-lg font-pixel-heading text-red-400">
               {result.playerKOs} 💀
-            </div>
-          </div>
-
-          {/* Steals */}
-          <div className="pixel-box-dark p-2 bg-black/70">
-            <div className="text-[8px] font-pixel-body text-zinc-400">ROBOS</div>
-            <div className="text-base sm:text-lg font-pixel-heading text-sky-400">
-              {result.totalSteals} 💥
             </div>
           </div>
         </div>
