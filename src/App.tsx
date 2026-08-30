@@ -297,21 +297,26 @@ export default function App() {
   ]);
 
   // Helper to progress Daily Missions
-  const updateMissionProgress = useCallback((type: string, amount: number, arenaReq?: string) => {
-    setMissions((prev) =>
-      prev.map((m) => {
-        if (m.type === type && (!m.arenaRequired || m.arenaRequired === arenaReq)) {
-          const nextVal = Math.min(m.target, m.current + amount);
-          return {
-            ...m,
-            current: nextVal,
-            completed: nextVal >= m.target,
-          };
-        }
-        return m;
-      })
-    );
-  }, []);
+  const updateMissionProgress = useCallback(
+    (type: string, amount: number, options?: { arenaReq?: string; classReq?: string }) => {
+      setMissions((prev) =>
+        prev.map((m) => {
+          if (m.type === type) {
+            if (m.arenaRequired && m.arenaRequired !== options?.arenaReq) return m;
+            if (m.classRequired && m.classRequired !== options?.classReq) return m;
+            const nextVal = Math.min(m.target, m.current + amount);
+            return {
+              ...m,
+              current: nextVal,
+              completed: nextVal >= m.target,
+            };
+          }
+          return m;
+        })
+      );
+    },
+    []
+  );
 
   // Initialize 3D Game Engine on Mount
   useEffect(() => {
@@ -346,6 +351,13 @@ export default function App() {
       }
     };
 
+    engine.onPlayerFeat = (featType, amount = 1) => {
+      updateMissionProgress(featType, amount, {
+        arenaReq: selectedArenaId,
+        classReq: selectedClassId,
+      });
+    };
+
     engine.onKillElimination = (event) => {
       setRecentKillEvent(event);
       setTimeout(() => {
@@ -378,19 +390,21 @@ export default function App() {
       setGameState('gameover');
 
       // Update Missions
-      updateMissionProgress('kos', result.playerKOs);
-      updateMissionProgress('coins_earned', result.playerCoins);
-      updateMissionProgress('damage_dealt', result.playerDamageDealt);
+      updateMissionProgress('class_play', 1, { classReq: selectedClassId });
       if (result.isPlayerWinner) {
-        updateMissionProgress('win_matches', 1, selectedArenaId);
+        updateMissionProgress('class_win', 1, { classReq: selectedClassId, arenaReq: selectedArenaId });
+        updateMissionProgress('win_matches', 1, { arenaReq: selectedArenaId });
       }
-      updateMissionProgress('play_arena', 1, selectedArenaId);
+      updateMissionProgress('kos', result.playerKOs, { classReq: selectedClassId });
+      updateMissionProgress('coins_earned', result.playerCoins, { classReq: selectedClassId });
+      updateMissionProgress('damage_dealt', result.playerDamageDealt, { classReq: selectedClassId });
+      updateMissionProgress('play_arena', 1, { arenaReq: selectedArenaId });
     };
 
     return () => {
       engine.destroy();
     };
-  }, [selectedArenaId, updateMissionProgress]);
+  }, [selectedArenaId, selectedClassId, updateMissionProgress]);
 
   // Start Game Handler
   const handleStartGame = useCallback(() => {

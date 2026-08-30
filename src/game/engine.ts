@@ -98,9 +98,17 @@ export class GameEngine3D {
   public onPlayerEliminated: ((killerStats: PlayerStats | null, killerBanner: KillBanner | null) => void) | null = null;
   public onKillElimination: ((event: EliminationEvent) => void) | null = null;
   public onBattleNotification: ((notif: BattleNotification) => void) | null = null;
+  public onPlayerFeat: ((featType: string, amount?: number) => void) | null = null;
   public onSpectateTargetChange: ((targetStats: PlayerStats) => void) | null = null;
   public onPointerLockExit: (() => void) | null = null;
   public cameraSensitivityMultiplier: number = 1.0;
+
+  // Impact Freeze & Hit Stop
+  private hitStopTimer: number = 0;
+
+  public triggerHitStop(duration: number = 0.065) {
+    this.hitStopTimer = duration;
+  }
 
   public emitBattleNotification(icon: string, text: string, detail?: string, color: string = '#fbbf24') {
     if (this.onBattleNotification) {
@@ -410,7 +418,9 @@ export class GameEngine3D {
       char.onReflectEvent = (otherName, isReflector) => {
         if (char.isPlayer) {
           if (isReflector) {
+            this.triggerHitStop(0.06);
             this.emitBattleNotification('🛡️', '¡Contragolpe Reflector!', `Devolviste el ataque a ${otherName}`, '#38bdf8');
+            this.onPlayerFeat?.('reflect_hits', 1);
           } else {
             this.emitBattleNotification('⚠️', '¡Ataque Reflejado!', `Te golpeaste contra el Escudo de ${otherName}`, '#ef4444');
           }
@@ -698,8 +708,10 @@ export class GameEngine3D {
 
           if (isHomeRunBat) {
             sound.playHomeRunBat();
+            this.triggerHitStop(0.08);
             if (attacker.isPlayer) {
               this.emitBattleNotification('⚾', '¡Home-Run Crítico!', `Lanzaste a ${target.stats.name}`, '#f59e0b');
+              this.onPlayerFeat?.('home_runs', 1);
             }
           }
 
@@ -707,11 +719,13 @@ export class GameEngine3D {
 
           if (isIcePunch) {
             sound.playSmashKO();
+            this.triggerHitStop(0.06);
             target.applyFreeze(1.0);
             attacker.hasIceCharge = false;
             attacker.stats.hasIceCharged = false;
             if (attacker.isPlayer) {
               this.emitBattleNotification('❄️', '¡Congelamiento Helado!', `Congelaste a ${target.stats.name} (1.0s)`, '#38bdf8');
+              this.onPlayerFeat?.('freeze_enemies', 1);
             }
           }
 
@@ -766,7 +780,9 @@ export class GameEngine3D {
           sound.playCoin();
 
           if (attacker.isPlayer) {
+            this.triggerHitStop(0.05);
             this.emitBattleNotification('📦', '¡Caja Sorpresa Destruida!', '+20 monedas y nuevo objeto', '#f59e0b');
+            this.onPlayerFeat?.('break_crates', 1);
           }
 
           // Spawn another item from crate
@@ -827,7 +843,10 @@ export class GameEngine3D {
     character.stats.abilityCooldown = classDef.ability.cooldown;
 
     const classId = character.classId;
-    const charPos = character.group.position;
+    const charPos = character.group.position.clone();
+    if (character.isPlayer) {
+      this.onPlayerFeat?.('class_ability', 1);
+    }
 
     if (classId === 'brawler') {
       // TITAN UPPER: Heavy charged punch with super armor
@@ -988,6 +1007,12 @@ export class GameEngine3D {
   private loop = () => {
     this.animationFrameId = requestAnimationFrame(this.loop);
     const delta = Math.min(this.clock.getDelta(), 0.1);
+
+    if (this.hitStopTimer > 0) {
+      this.hitStopTimer -= delta;
+      this.renderer.render(this.scene, this.camera);
+      return;
+    }
 
     if (this.isMatchRunning && !this.isPaused) {
       // 1. Update Match Timers
@@ -1436,6 +1461,9 @@ export class GameEngine3D {
           this.world.removeItem(this.scene, item.id);
           sound.playItemPickup();
           this.particleSystem.createSparkles(itemPos, '#38bdf8');
+          if (char.isPlayer) {
+            this.onPlayerFeat?.('pick_items', 1);
+          }
 
           char.stats.activeItem = item.type;
           char.stats.itemTimeLeft = 10;

@@ -12,6 +12,10 @@ export class Character3D {
   public stats: PlayerStats;
 
   // Visual Meshes
+  public overheadMarkerMesh!: THREE.Mesh;
+  public groundRingMesh!: THREE.Mesh;
+  public groundShadowMesh!: THREE.Mesh;
+  public batMesh!: THREE.Mesh;
   private headMesh!: THREE.Mesh;
   private bodyMesh!: THREE.Mesh;
   private leftArmMesh!: THREE.Mesh;
@@ -20,12 +24,8 @@ export class Character3D {
   private rightLegMesh!: THREE.Mesh;
   private hatMesh: THREE.Group | null = null;
   private gloveMesh!: THREE.Group;
-  private batMesh!: THREE.Mesh;
   private reflectShieldMesh!: THREE.Mesh;
-  private iceBlockMesh!: THREE.Group;
   private nameplateSprite!: THREE.Sprite;
-  private groundRingMesh!: THREE.Mesh;
-  private overheadMarkerMesh!: THREE.Mesh;
 
   // Combat Attacker Tracking
   public lastAttacker: Character3D | null = null;
@@ -291,6 +291,19 @@ export class Character3D {
       this.groundRingMesh.rotation.x = Math.PI / 2;
       this.groundRingMesh.position.y = 0.04;
       this.group.add(this.groundRingMesh);
+
+      // 3. Universal Drop Blob Shadow under feet onto ground
+      const shadowGeo = new THREE.CircleGeometry(0.55, 16);
+      const shadowMat = new THREE.MeshBasicMaterial({
+        color: 0x000000,
+        transparent: true,
+        opacity: 0.38,
+        depthWrite: false,
+      });
+      this.groundShadowMesh = new THREE.Mesh(shadowGeo, shadowMat);
+      this.groundShadowMesh.rotation.x = -Math.PI / 2;
+      this.groundShadowMesh.position.y = 0.02;
+      this.group.add(this.groundShadowMesh);
 
       // Invisible placeholder
       const dummyGeo = new THREE.BufferGeometry();
@@ -705,6 +718,12 @@ export class Character3D {
     if (this.isPlayer && this.overheadMarkerMesh) {
       this.overheadMarkerMesh.position.y = 2.6 + Math.sin(Date.now() * 0.006) * 0.12;
       this.overheadMarkerMesh.rotation.y += 2.0 * delta;
+    }
+    if (this.groundShadowMesh) {
+      const height = Math.max(0, this.group.position.y);
+      const scale = Math.max(0.3, 1.0 - height * 0.07);
+      this.groundShadowMesh.scale.set(scale, scale, scale);
+      (this.groundShadowMesh.material as THREE.MeshBasicMaterial).opacity = Math.max(0.08, 0.38 - height * 0.025);
     }
 
     // Update billboard
