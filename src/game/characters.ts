@@ -1996,9 +1996,9 @@ export class Character3D {
       this.particles.createSparkles(gloveWorldPos, '#06b6d4');
     }
 
-    // 2. Punch Animation (Paced and readable)
+    // 2. Right Arm Weapon Strike / Ability Cast Animation
     if (this.isPunching) {
-      this.punchAnimProgress += delta * (this.punchType === 'titan' ? 2.5 : 3.8);
+      this.punchAnimProgress += delta * (this.punchType === 'titan' ? 2.6 : 3.8);
       if (this.punchAnimProgress >= 1.0) {
         this.isPunching = false;
         this.punchAnimProgress = 0;
@@ -2006,12 +2006,13 @@ export class Character3D {
         this.rightArmMesh.position.set(0.48, 0.88, 0);
         this.rightArmMesh.rotation.set(0, 0, 0);
       } else {
-        // Forward extension & recovery arc
+        // Dynamic weapon thrust & strike downward swing
         const progress = this.punchAnimProgress;
-        const forwardReach = Math.sin(progress * Math.PI) * (this.punchType === 'titan' ? 1.3 : 0.85);
+        const forwardReach = Math.sin(progress * Math.PI) * (this.punchType === 'titan' ? 1.4 : 0.95);
         this.rightArmMesh.position.z = forwardReach;
-        this.rightArmMesh.position.y = 0.88 + Math.sin(progress * Math.PI) * 0.25;
-        this.rightArmMesh.rotation.x = -Math.sin(progress * Math.PI) * 1.0;
+        this.rightArmMesh.position.y = 0.88 + Math.sin(progress * Math.PI) * 0.22;
+        this.rightArmMesh.rotation.x = -Math.sin(progress * Math.PI) * 1.35;
+        this.rightArmMesh.rotation.y = -Math.sin(progress * Math.PI) * 0.25;
       }
     }
 
