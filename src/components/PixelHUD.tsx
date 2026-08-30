@@ -133,7 +133,7 @@ export const PixelHUD: React.FC<PixelHUDProps> = ({
               id="hud-pause-btn"
               onClick={onPause}
               className="pointer-events-auto pixel-btn pixel-box-dark w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center text-white text-xs sm:text-sm hover:bg-zinc-800"
-              title="Pausar"
+              title="Pausa / Menú de salida (ESC)"
             >
               ⏸️
             </button>

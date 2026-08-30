@@ -142,13 +142,10 @@ export const MainMenu: React.FC<MainMenuProps> = ({
       <div className="flex-1 flex flex-col items-center justify-evenly max-w-3xl w-full py-1">
         {/* Title Banner */}
         <div className="relative">
-          <div className="pixel-box-red px-5 sm:px-8 py-1.5 sm:py-2.5 transform -rotate-1 shadow-2xl">
+          <div className="pixel-box-red px-5 sm:px-8 py-2 sm:py-3 transform -rotate-1 shadow-2xl">
             <h1 className="text-xl sm:text-3xl md:text-4xl font-pixel-heading text-yellow-300 pixel-text-stroke tracking-wider">
               SMASH DEL BOTÓN
             </h1>
-            <div className="text-[8px] sm:text-[10px] font-pixel-body text-white tracking-widest bg-red-950/80 py-0.5 px-2 border border-red-800 inline-block mt-0.5">
-              ★ 3D RETRO BRAWLER • BOTÓN LOCO • GUANTE DE ROBO ★
-            </div>
           </div>
         </div>
 
@@ -340,10 +337,8 @@ export const MainMenu: React.FC<MainMenuProps> = ({
         </div>
       </div>
 
-      {/* 4. BOTTOM FOOTER */}
-      <div className="text-center font-pixel-body text-[8px] text-zinc-500 shrink-0">
-        CÁMARA TPS • FÍSICAS PROGRESIVAS SMASH • EVENTOS DE BOTÓN LOCO • MISIONES DIARIAS
-      </div>
+      {/* 4. BOTTOM CONTAINER */}
+      <div className="h-1 shrink-0" />
     </div>
   );
 };

@@ -356,6 +356,10 @@ export default function App() {
       setIsEliminatedModalOpen(true);
     };
 
+    engine.onPauseRequested = () => {
+      handlePause();
+    };
+
     engine.onMatchEnd = (result) => {
       setIsEliminatedModalOpen(false);
       setIsSpectating(false);
@@ -406,6 +410,7 @@ export default function App() {
       selectedArenaId,
       playerName
     );
+    engineRef.current.requestPointerLock();
     setGameState('playing');
   }, [
     selectedMode,
@@ -466,6 +471,7 @@ export default function App() {
         room,
         spawns
       );
+      engineRef.current.requestPointerLock();
       setGameState('playing');
     },
     [
@@ -510,18 +516,59 @@ export default function App() {
 
   // Pause / Resume
   const handlePause = useCallback(() => {
-    if (engineRef.current && gameState === 'playing' && !isSpectating && !isEliminatedModalOpen) {
+    if (engineRef.current && gameState === 'playing' && !isEliminatedModalOpen) {
       engineRef.current.setPaused(true);
       setGameState('paused');
     }
-  }, [gameState, isSpectating, isEliminatedModalOpen]);
+  }, [gameState, isEliminatedModalOpen]);
 
   const handleResume = useCallback(() => {
     if (engineRef.current && gameState === 'paused') {
       engineRef.current.setPaused(false);
       setGameState('playing');
+      engineRef.current.requestPointerLock();
     }
   }, [gameState]);
+
+  // Global ESC Key Listener for Pause / Exit Menu and Modal navigation
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' || e.code === 'Escape') {
+        if (isSettingsOpen) {
+          setIsSettingsOpen(false);
+        } else if (isShopOpen) {
+          setIsShopOpen(false);
+        } else if (isMissionsOpen) {
+          setIsMissionsOpen(false);
+        } else if (isClassSelectOpen) {
+          setIsClassSelectOpen(false);
+        } else if (isHowToPlayOpen) {
+          setIsHowToPlayOpen(false);
+        } else if (isMultiplayerLobbyOpen) {
+          setIsMultiplayerLobbyOpen(false);
+        } else if (gameState === 'playing') {
+          handlePause();
+        } else if (gameState === 'paused') {
+          handleResume();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleGlobalKeyDown);
+    };
+  }, [
+    isSettingsOpen,
+    isShopOpen,
+    isMissionsOpen,
+    isClassSelectOpen,
+    isHowToPlayOpen,
+    isMultiplayerLobbyOpen,
+    gameState,
+    handlePause,
+    handleResume,
+  ]);
 
   const handleGoToMenu = useCallback(() => {
     if (engineRef.current) {

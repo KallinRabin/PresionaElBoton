@@ -96,6 +96,7 @@ export class GameEngine3D {
   public onPlayerEliminated: ((killerStats: PlayerStats | null, killerBanner: KillBanner | null) => void) | null = null;
   public onKillElimination: ((event: EliminationEvent) => void) | null = null;
   public onSpectateTargetChange: ((targetStats: PlayerStats) => void) | null = null;
+  public onPauseRequested: (() => void) | null = null;
   public cameraSensitivityMultiplier: number = 1.0;
 
   // Animation Frame & Clock
@@ -203,6 +204,14 @@ export class GameEngine3D {
     this.keysPressed[e.key.toLowerCase()] = true;
     if (e.code) this.keysPressed[e.code.toLowerCase()] = true;
 
+    // Escape = Pause / Exit Game Menu
+    if (e.key === 'Escape' || e.code === 'Escape') {
+      if (this.onPauseRequested) {
+        this.onPauseRequested();
+      }
+      return;
+    }
+
     // Space = SALTO PURO (Strictly Jump, with preventDefault to avoid scrolling or button click triggers)
     if (e.code === 'Space') {
       e.preventDefault();
@@ -221,18 +230,54 @@ export class GameEngine3D {
     }
   };
 
+  public requestPointerLock() {
+    try {
+      if (this.canvas && document.pointerLockElement !== this.canvas) {
+        const promise = this.canvas.requestPointerLock?.();
+        if (promise && typeof (promise as any).catch === 'function') {
+          (promise as any).catch(() => {});
+        }
+      }
+    } catch (e) {
+      // Ignored
+    }
+  }
+
+  public exitPointerLock() {
+    try {
+      if (typeof document !== 'undefined' && document.pointerLockElement) {
+        document.exitPointerLock?.();
+      }
+    } catch (e) {
+      // Ignored
+    }
+  }
+
+  public setPaused(paused: boolean) {
+    this.isPaused = paused;
+    if (paused) {
+      this.exitPointerLock();
+    }
+  }
+
+  public getPaused(): boolean {
+    return this.isPaused;
+  }
+
   private handleKeyUp = (e: KeyboardEvent) => {
     this.keysPressed[e.key.toLowerCase()] = false;
     if (e.code) this.keysPressed[e.code.toLowerCase()] = false;
   };
 
   private handleMouseDown = (e: MouseEvent) => {
-    // Left Click: Steal Glove Punch + Request Pointer Lock on match
+    // Request pointer lock when clicking inside active match
+    if (this.isMatchRunning && !this.isPaused && document.pointerLockElement !== this.canvas) {
+      this.requestPointerLock();
+    }
+
+    // Left Click: Steal Glove Punch
     if (e.button === 0) {
       this.triggerPlayerPunch();
-      if (this.isMatchRunning && !this.isPaused && document.pointerLockElement !== this.canvas) {
-        this.canvas.requestPointerLock?.();
-      }
     } else if (e.button === 2) {
       // Right click is strictly for camera dragging and NEVER triggers ability or attack
       e.preventDefault();
@@ -481,6 +526,9 @@ export class GameEngine3D {
         });
       }
     };
+
+    // Request pointer lock when battle arena starts
+    this.requestPointerLock();
   }
 
   // Spectator mode handling
@@ -553,13 +601,6 @@ export class GameEngine3D {
 
   public setJoystickMove(vec: { x: number; y: number }) {
     this.joystickVector = vec;
-  }
-
-  public setPaused(paused: boolean) {
-    this.isPaused = paused;
-    if (paused && typeof document !== 'undefined' && document.pointerLockElement) {
-      document.exitPointerLock?.();
-    }
   }
 
   public setParticleEffectsEnabled(enabled: boolean) {
