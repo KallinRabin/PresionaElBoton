@@ -81,7 +81,16 @@ export default function App() {
 
   const [skins, setSkins] = useState<CharacterSkin[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEY_SKINS);
-    return saved ? JSON.parse(saved) : INITIAL_SKINS;
+    if (!saved) return INITIAL_SKINS;
+    try {
+      const parsed: CharacterSkin[] = JSON.parse(saved);
+      return INITIAL_SKINS.map((initSkin) => {
+        const found = parsed.find((p) => p.id === initSkin.id);
+        return found ? { ...initSkin, unlocked: found.unlocked || initSkin.unlocked } : initSkin;
+      });
+    } catch {
+      return INITIAL_SKINS;
+    }
   });
 
   const [selectedSkinId, setSelectedSkinId] = useState<string>(() => {
