@@ -197,8 +197,10 @@ export class GameEngine3D {
   };
 
   private handlePointerLockChange = () => {
+    const wasLocked = this.isPointerLocked;
     this.isPointerLocked = document.pointerLockElement === this.canvas;
-    if (!this.isPointerLocked && this.isMatchRunning && !this.isPaused) {
+    // Only fire exit if we WERE locked and now we transitioned to unlocked
+    if (wasLocked && !this.isPointerLocked && this.isMatchRunning && !this.isPaused) {
       if (this.onPointerLockExit) {
         this.onPointerLockExit();
       }
@@ -208,6 +210,11 @@ export class GameEngine3D {
   private handleKeyDown = (e: KeyboardEvent) => {
     this.keysPressed[e.key.toLowerCase()] = true;
     if (e.code) this.keysPressed[e.code.toLowerCase()] = true;
+
+    // During active match, any user interaction keeps pointer lock locked
+    if (this.isMatchRunning && !this.isPaused && document.pointerLockElement !== this.canvas) {
+      this.requestPointerLock();
+    }
 
     // Space = SALTO PURO (Strictly Jump, with preventDefault to avoid scrolling or button click triggers)
     if (e.code === 'Space') {
@@ -299,15 +306,20 @@ export class GameEngine3D {
       const sensitivity = 0.0032 * this.cameraSensitivityMultiplier;
       this.cameraYaw -= e.movementX * sensitivity;
       this.cameraPitch = Math.max(-0.25, Math.min(0.65, this.cameraPitch + e.movementY * sensitivity));
-    } else if (this.isMouseDownForDrag) {
-      // Fallback Mouse Drag Orbit
-      const dx = e.clientX - this.lastMouseX;
-      const dy = e.clientY - this.lastMouseY;
-      this.lastMouseX = e.clientX;
-      this.lastMouseY = e.clientY;
-      const sensitivity = 0.005 * this.cameraSensitivityMultiplier;
-      this.cameraYaw -= dx * sensitivity;
-      this.cameraPitch = Math.max(-0.25, Math.min(0.65, this.cameraPitch + dy * sensitivity));
+    } else {
+      // If not yet locked during active gameplay, auto-lock
+      this.requestPointerLock();
+
+      if (this.isMouseDownForDrag) {
+        // Fallback Mouse Drag Orbit
+        const dx = e.clientX - this.lastMouseX;
+        const dy = e.clientY - this.lastMouseY;
+        this.lastMouseX = e.clientX;
+        this.lastMouseY = e.clientY;
+        const sensitivity = 0.005 * this.cameraSensitivityMultiplier;
+        this.cameraYaw -= dx * sensitivity;
+        this.cameraPitch = Math.max(-0.25, Math.min(0.65, this.cameraPitch + dy * sensitivity));
+      }
     }
   };
 
