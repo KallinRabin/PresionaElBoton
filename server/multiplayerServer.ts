@@ -38,18 +38,33 @@ export interface Room {
 }
 
 const app = express();
-const distPath = path.join(__dirname, '../dist');
 
-if (fs.existsSync(distPath)) {
-  app.use(express.static(distPath));
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(distPath, 'index.html'));
-  });
-} else {
-  app.get('/', (req, res) => {
-    res.json({ status: 'online', game: 'Smash del Boton Server' });
-  });
-}
+// Robust static dist path resolution for both local and Render
+const distPath = fs.existsSync(path.resolve(process.cwd(), 'dist'))
+  ? path.resolve(process.cwd(), 'dist')
+  : path.resolve(__dirname, '../dist');
+
+console.log(`[Server] Serving static files from: ${distPath}`);
+
+app.use(express.static(distPath));
+
+app.get('*', (req, res) => {
+  const indexPath = path.join(distPath, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(200).send(`
+      <!DOCTYPE html>
+      <html>
+        <head><title>Smash del Boton</title></head>
+        <body style="background:#090a14;color:#fef08a;font-family:sans-serif;text-align:center;padding:50px;">
+          <h1>🥊 Smash del Boton Server</h1>
+          <p>Servidor en línea. Si estás viendo esto, ejecuta <code>npm run build</code> para generar los archivos web.</p>
+        </body>
+      </html>
+    `);
+  }
+});
 
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
