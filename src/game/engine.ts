@@ -1084,7 +1084,12 @@ export class GameEngine3D {
 
     const inputLen = Math.sqrt(moveForward * moveForward + moveStrafe * moveStrafe);
     const classDef = PLAYER_CLASSES.find((c) => c.id === this.player!.classId) || PLAYER_CLASSES[0];
-    const targetSpeed = classDef.speed;
+    const hasPotion = this.player.stats.activeItem === 'potion' || this.player.stats.hasSpeedBoost;
+    const targetSpeed = classDef.speed * (hasPotion ? 1.65 : 1.0);
+
+    if (hasPotion && inputLen > 0.05 && Math.random() < 0.35) {
+      this.particleSystem.createSparkles(this.player.group.position, '#c026d3');
+    }
 
     if (inputLen > 0.05) {
       const normForward = moveForward / Math.max(1, inputLen);
@@ -1125,7 +1130,8 @@ export class GameEngine3D {
 
       if (!char.stats.isStunned && !char.stats.isRespawning) {
         const classDef = PLAYER_CLASSES.find((c) => c.id === char.classId) || PLAYER_CLASSES[0];
-        const botSpeed = classDef.speed * 0.85;
+        const hasPotion = char.stats.activeItem === 'potion' || char.stats.hasSpeedBoost;
+        const botSpeed = classDef.speed * 0.85 * (hasPotion ? 1.65 : 1.0);
 
         if (inputs.move.lengthSq() > 0.05) {
           char.velocity.x += (inputs.move.x * botSpeed - char.velocity.x) * 5.5 * delta;
@@ -1359,22 +1365,31 @@ export class GameEngine3D {
 
           if (item.type === 'heart') {
             sound.playDamageHeal();
-            char.stats.damagePercent = Math.max(0, char.stats.damagePercent - 60);
-            this.particleSystem.createFloatingText(char.group.position, '-60% DAÑO', '#ec4899');
+            char.stats.damagePercent = Math.max(0, char.stats.damagePercent - 70);
+            this.particleSystem.createSparkles(char.group.position, '#ef4444');
+            this.particleSystem.createFloatingText(char.group.position, '¡-70% DAÑO!', '#ef4444');
+          } else if (item.type === 'potion') {
+            char.stats.itemTimeLeft = 10;
+            char.stats.hasSpeedBoost = true;
+            this.particleSystem.createSparkles(char.group.position, '#c026d3');
+            this.particleSystem.createFloatingText(char.group.position, '¡SUPER VELOCIDAD!', '#c026d3');
+          } else if (item.type === 'shield') {
+            char.stats.itemTimeLeft = 7;
+            char.stats.hasInvincibleShield = true;
+            this.particleSystem.createSparkles(char.group.position, '#06b6d4');
+            this.particleSystem.createFloatingText(char.group.position, '¡ESCUDO INVENCIBLE!', '#06b6d4');
           } else if (item.type === 'bat') {
+            char.batMesh.visible = true;
             this.particleSystem.createFloatingText(char.group.position, '¡BATE SMASH!', '#f59e0b');
           } else if (item.type === 'giant_glove') {
             char.stats.hasGiantGlove = true;
             this.particleSystem.createFloatingText(char.group.position, '¡GUANTELETE!', '#8b5cf6');
-          } else if (item.type === 'magnet') {
-            char.stats.hasMagnet = true;
-            this.particleSystem.createFloatingText(char.group.position, '¡SUPER IMÁN!', '#3b82f6');
           } else if (item.type === 'bomb') {
             // Explode bomb in area
             this.particleSystem.createExplosion(itemPos);
             this.allCharacters.forEach((c) => {
               if (c !== char && c.group.position.distanceTo(itemPos) < 6) {
-                c.receiveHit(char, 20, 20, true);
+                c.receiveHit(char, 24, 22, true);
               }
             });
           }

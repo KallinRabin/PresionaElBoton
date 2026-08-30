@@ -37,7 +37,7 @@ export interface PlayerClass {
   ability: ClassAbility;
 }
 
-export type ItemType = 'bat' | 'bomb' | 'heart' | 'magnet' | 'giant_glove' | 'crate';
+export type ItemType = 'bat' | 'bomb' | 'heart' | 'potion' | 'giant_glove' | 'crate' | 'shield';
 
 export interface BattleItemDef {
   type: ItemType;
@@ -151,7 +151,9 @@ export interface PlayerStats {
   abilityActiveTime: number;
   hasReflectShield: boolean;
   hasGiantGlove: boolean;
-  hasMagnet: boolean;
+  hasMagnet?: boolean;
+  hasSpeedBoost?: boolean;
+  hasInvincibleShield?: boolean;
   hasIceCharged?: boolean;
   activeItem: ItemType | null;
   itemTimeLeft: number;

@@ -105,7 +105,8 @@ export class Character3D {
       abilityActiveTime: 0,
       hasReflectShield: false,
       hasGiantGlove: false,
-      hasMagnet: false,
+      hasSpeedBoost: false,
+      hasInvincibleShield: false,
       activeItem: null,
       itemTimeLeft: 0,
       isStunned: false,
@@ -581,6 +582,8 @@ export class Character3D {
         this.stats.activeItem = null;
         this.stats.hasGiantGlove = false;
         this.stats.hasMagnet = false;
+        this.stats.hasSpeedBoost = false;
+        this.stats.hasInvincibleShield = false;
         this.batMesh.visible = false;
       }
     }
@@ -711,6 +714,14 @@ export class Character3D {
     isCritical: boolean = false
   ) {
     if (this.invulnerableTimer > 0 || this.stats.isRespawning) return;
+
+    // Check Energy Shield (Power-up Item)
+    if (this.stats.activeItem === 'shield' || this.stats.hasInvincibleShield) {
+      this.particles.createHitSparks(this.group.position, true);
+      this.particles.createSparkles(this.group.position, '#06b6d4');
+      this.particles.createFloatingText(this.group.position, '¡ESCUDO BLOQUEÓ!', '#06b6d4');
+      return;
+    }
 
     // Check Reflect Shield (Iron Guardian)
     if (this.stats.hasReflectShield) {

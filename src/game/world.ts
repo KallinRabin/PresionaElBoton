@@ -340,48 +340,22 @@ export class World3DArena {
       ? BATTLE_ITEMS.find((b) => b.type === type) || BATTLE_ITEMS[0]
       : BATTLE_ITEMS[Math.floor(Math.random() * BATTLE_ITEMS.length)];
 
-    const itemGroup = new THREE.Group();
+    let itemGroup: THREE.Group;
 
-    if (itemDef.type === 'crate') {
-      const crateGeo = new THREE.BoxGeometry(1.2, 1.2, 1.2);
-      const crateMat = new THREE.MeshLambertMaterial({ color: 0xd97706 });
-      const crateMesh = new THREE.Mesh(crateGeo, crateMat);
-      crateMesh.position.y = 0.6;
-      crateMesh.castShadow = true;
-      itemGroup.add(crateMesh);
+    if (itemDef.type === 'heart') {
+      itemGroup = this.buildPixelHeart();
+    } else if (itemDef.type === 'potion') {
+      itemGroup = this.buildPixelPotion();
+    } else if (itemDef.type === 'shield') {
+      itemGroup = this.buildPixelShield();
     } else if (itemDef.type === 'bat') {
-      const batGeo = new THREE.CylinderGeometry(0.18, 0.08, 1.6, 8);
-      const batMat = new THREE.MeshLambertMaterial({ color: 0xf59e0b });
-      const batMesh = new THREE.Mesh(batGeo, batMat);
-      batMesh.position.y = 0.8;
-      batMesh.rotation.z = Math.PI / 4;
-      batMesh.castShadow = true;
-      itemGroup.add(batMesh);
+      itemGroup = this.buildPixelBat();
     } else if (itemDef.type === 'bomb') {
-      const bombGeo = new THREE.SphereGeometry(0.5, 8, 8);
-      const bombMat = new THREE.MeshLambertMaterial({ color: 0x18181b });
-      const bombMesh = new THREE.Mesh(bombGeo, bombMat);
-      bombMesh.position.y = 0.6;
-      bombMesh.castShadow = true;
-      itemGroup.add(bombMesh);
-    } else if (itemDef.type === 'heart') {
-      const heartGeo = new THREE.BoxGeometry(0.8, 0.8, 0.4);
-      const heartMat = new THREE.MeshLambertMaterial({ color: 0xec4899 });
-      const heartMesh = new THREE.Mesh(heartGeo, heartMat);
-      heartMesh.position.y = 0.6;
-      itemGroup.add(heartMesh);
-    } else if (itemDef.type === 'magnet') {
-      const magGeo = new THREE.TorusGeometry(0.5, 0.15, 6, 12, Math.PI);
-      const magMat = new THREE.MeshLambertMaterial({ color: 0x3b82f6 });
-      const magMesh = new THREE.Mesh(magGeo, magMat);
-      magMesh.position.y = 0.6;
-      itemGroup.add(magMesh);
+      itemGroup = this.buildPixelBomb();
+    } else if (itemDef.type === 'crate') {
+      itemGroup = this.buildPixelCrate();
     } else {
-      const gloveGeo = new THREE.BoxGeometry(0.9, 0.9, 0.9);
-      const gloveMat = new THREE.MeshLambertMaterial({ color: 0x8b5cf6 });
-      const gloveMesh = new THREE.Mesh(gloveGeo, gloveMat);
-      gloveMesh.position.y = 0.6;
-      itemGroup.add(gloveMesh);
+      itemGroup = this.buildPixelGlove();
     }
 
     itemGroup.position.copy(chosenPad);
@@ -430,5 +404,403 @@ export class World3DArena {
     });
     this.spawnedItems = [];
     scene.remove(this.group);
+  }
+
+  // --- 3D PIXEL RETRO ITEM BUILDERS ---
+
+  // 1. Pixel Art Heart (Exact match to reference: 3D sculpted pixel voxel heart with black outline, red core & white/pink highlight)
+  private buildPixelHeart(): THREE.Group {
+    const group = new THREE.Group();
+    const pixelSize = 0.12;
+    const depth = 0.28;
+
+    const redMat = new THREE.MeshLambertMaterial({ color: 0xef4444, emissive: 0x500000 });
+    const darkMat = new THREE.MeshLambertMaterial({ color: 0x18181b });
+    const whiteMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const pinkMat = new THREE.MeshLambertMaterial({ color: 0xfca5a5 });
+
+    // 10x9 Pixel Heart Matrix matching reference image
+    const heartMap = [
+      '..BB..BB..',
+      '.BWWBBBRB.',
+      'BWWRRRRRRB',
+      'BPRRRRRRRB',
+      'BRRRRRRRRB',
+      '.BRRRRRRB.',
+      '..BRRRRB..',
+      '...BRRB...',
+      '....BB....',
+    ];
+
+    const boxGeo = new THREE.BoxGeometry(pixelSize, pixelSize, depth);
+
+    for (let row = 0; row < heartMap.length; row++) {
+      const line = heartMap[row];
+      for (let col = 0; col < line.length; col++) {
+        const ch = line[col];
+        if (ch === '.') continue;
+
+        let mat = redMat;
+        if (ch === 'B') mat = darkMat;
+        else if (ch === 'W') mat = whiteMat;
+        else if (ch === 'P') mat = pinkMat;
+
+        const voxel = new THREE.Mesh(boxGeo, mat);
+        voxel.position.set(
+          (col - 4.5) * pixelSize,
+          (8 - row) * pixelSize + 0.35,
+          0
+        );
+        voxel.castShadow = true;
+        group.add(voxel);
+      }
+    }
+
+    // Glow aura ring
+    const ringGeo = new THREE.TorusGeometry(0.65, 0.04, 6, 16);
+    const ringMat = new THREE.MeshBasicMaterial({ color: 0xf43f5e, transparent: true, opacity: 0.6 });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.rotation.x = Math.PI / 2;
+    ring.position.y = 0.8;
+    group.add(ring);
+
+    return group;
+  }
+
+  // 2. Pixel Magic Potion Flask (Exact match to reference: Glass flask with purple elixir, silver collar, cork stopper & pixel outline)
+  private buildPixelPotion(): THREE.Group {
+    const group = new THREE.Group();
+    const pixelSize = 0.11;
+    const depth = 0.28;
+
+    const darkMat = new THREE.MeshLambertMaterial({ color: 0x18181b });
+    const corkMat = new THREE.MeshLambertMaterial({ color: 0x92400e });
+    const silverMat = new THREE.MeshLambertMaterial({ color: 0xe2e8f0 });
+    const glassMat = new THREE.MeshLambertMaterial({ color: 0x818cf8, transparent: true, opacity: 0.85 });
+    const purpleMat = new THREE.MeshLambertMaterial({ color: 0xa855f7, emissive: 0x3b0764 });
+    const highlightMat = new THREE.MeshBasicMaterial({ color: 0xf0abfc });
+    const whiteMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+
+    // 10x12 Pixel Potion Matrix matching reference image
+    const potionMap = [
+      '....CC....',
+      '....CC....',
+      '...BSSB...',
+      '...BGGB...',
+      '..BBGGBB..',
+      '.BGGPPGGB.',
+      'BGWPPPPPGB',
+      'BGWPHPPPGB',
+      'BGPPPHPPGB',
+      'BGPPPPPPGB',
+      '.BGPPPPGB.',
+      '..BBBBBB..',
+    ];
+
+    const boxGeo = new THREE.BoxGeometry(pixelSize, pixelSize, depth);
+
+    for (let row = 0; row < potionMap.length; row++) {
+      const line = potionMap[row];
+      for (let col = 0; col < line.length; col++) {
+        const ch = line[col];
+        if (ch === '.') continue;
+
+        let mat = purpleMat;
+        if (ch === 'B') mat = darkMat;
+        else if (ch === 'C') mat = corkMat;
+        else if (ch === 'S') mat = silverMat;
+        else if (ch === 'G') mat = glassMat;
+        else if (ch === 'W') mat = whiteMat;
+        else if (ch === 'H') mat = highlightMat;
+
+        const voxel = new THREE.Mesh(boxGeo, mat);
+        voxel.position.set(
+          (col - 4.5) * pixelSize,
+          (11 - row) * pixelSize + 0.25,
+          0
+        );
+        voxel.castShadow = true;
+        group.add(voxel);
+      }
+    }
+
+    // Glowing magic particle ring
+    const ringGeo = new THREE.TorusGeometry(0.6, 0.035, 6, 16);
+    const ringMat = new THREE.MeshBasicMaterial({ color: 0xc026d3, transparent: true, opacity: 0.65 });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.rotation.x = Math.PI / 2;
+    ring.position.y = 0.8;
+    group.add(ring);
+
+    return group;
+  }
+
+  // 3. Pixel Energy Shield (Holographic Hex Shield)
+  private buildPixelShield(): THREE.Group {
+    const group = new THREE.Group();
+    const pixelSize = 0.12;
+    const depth = 0.26;
+
+    const darkMat = new THREE.MeshLambertMaterial({ color: 0x0f172a });
+    const cyanMat = new THREE.MeshLambertMaterial({ color: 0x06b6d4, emissive: 0x083344 });
+    const lightCyanMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
+    const whiteMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+
+    const shieldMap = [
+      '..BBBBBB..',
+      '.BCCCCLLB.',
+      'BCLLLLLLCB',
+      'BCLLWWLLCB',
+      'BCLLWWLLCB',
+      'BCCLLLLCCB',
+      '.BCCLLCCB.',
+      '..BCCCCB..',
+      '...BCCB...',
+      '....BB....',
+    ];
+
+    const boxGeo = new THREE.BoxGeometry(pixelSize, pixelSize, depth);
+
+    for (let row = 0; row < shieldMap.length; row++) {
+      const line = shieldMap[row];
+      for (let col = 0; col < line.length; col++) {
+        const ch = line[col];
+        if (ch === '.') continue;
+
+        let mat = cyanMat;
+        if (ch === 'B') mat = darkMat;
+        else if (ch === 'L') mat = lightCyanMat;
+        else if (ch === 'W') mat = whiteMat;
+
+        const voxel = new THREE.Mesh(boxGeo, mat);
+        voxel.position.set(
+          (col - 4.5) * pixelSize,
+          (9 - row) * pixelSize + 0.35,
+          0
+        );
+        voxel.castShadow = true;
+        group.add(voxel);
+      }
+    }
+
+    const ringGeo = new THREE.TorusGeometry(0.68, 0.04, 6, 16);
+    const ringMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.7 });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.rotation.x = Math.PI / 2;
+    ring.position.y = 0.85;
+    group.add(ring);
+
+    return group;
+  }
+
+  // 4. Pixel Golden Smash Bat
+  private buildPixelBat(): THREE.Group {
+    const group = new THREE.Group();
+    const pixelSize = 0.11;
+    const depth = 0.28;
+
+    const goldMat = new THREE.MeshLambertMaterial({ color: 0xf59e0b, emissive: 0x451a03 });
+    const lightGoldMat = new THREE.MeshBasicMaterial({ color: 0xfde047 });
+    const redWrapMat = new THREE.MeshLambertMaterial({ color: 0xef4444 });
+    const darkMat = new THREE.MeshLambertMaterial({ color: 0x18181b });
+
+    const batMap = [
+      '.......BB.',
+      '......BGLB',
+      '.....BGGGB',
+      '....BGGGB.',
+      '...BGGGB..',
+      '..BGGGB...',
+      '.BRRGB....',
+      '.BRRB.....',
+      'BKKKB.....',
+      '.BBB......',
+    ];
+
+    const boxGeo = new THREE.BoxGeometry(pixelSize, pixelSize, depth);
+
+    for (let row = 0; row < batMap.length; row++) {
+      const line = batMap[row];
+      for (let col = 0; col < line.length; col++) {
+        const ch = line[col];
+        if (ch === '.') continue;
+
+        let mat = goldMat;
+        if (ch === 'B') mat = darkMat;
+        else if (ch === 'L') mat = lightGoldMat;
+        else if (ch === 'G') mat = goldMat;
+        else if (ch === 'R') mat = redWrapMat;
+        else if (ch === 'K') mat = darkMat;
+
+        const voxel = new THREE.Mesh(boxGeo, mat);
+        voxel.position.set(
+          (col - 4.5) * pixelSize,
+          (9 - row) * pixelSize + 0.35,
+          0
+        );
+        voxel.castShadow = true;
+        group.add(voxel);
+      }
+    }
+
+    const ringGeo = new THREE.TorusGeometry(0.65, 0.04, 6, 16);
+    const ringMat = new THREE.MeshBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.65 });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.rotation.x = Math.PI / 2;
+    ring.position.y = 0.8;
+    group.add(ring);
+
+    return group;
+  }
+
+  // 5. Pixel Retro Bomb
+  private buildPixelBomb(): THREE.Group {
+    const group = new THREE.Group();
+    const pixelSize = 0.12;
+    const depth = 0.28;
+
+    const blackMat = new THREE.MeshLambertMaterial({ color: 0x27272a });
+    const darkBorder = new THREE.MeshLambertMaterial({ color: 0x09090b });
+    const brassMat = new THREE.MeshLambertMaterial({ color: 0xd97706 });
+    const sparkMat = new THREE.MeshBasicMaterial({ color: 0xf97316 });
+    const whiteMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+
+    const bombMap = [
+      '......SS..',
+      '.....BB...',
+      '....CC....',
+      '..BBBBBB..',
+      '.BKKKKKKB.',
+      'BKKWKKKKKB',
+      'BKKWKKKKKB',
+      'BKKKKKKKKB',
+      '.BKKKKKKB.',
+      '..BBBBBB..',
+    ];
+
+    const boxGeo = new THREE.BoxGeometry(pixelSize, pixelSize, depth);
+
+    for (let row = 0; row < bombMap.length; row++) {
+      const line = bombMap[row];
+      for (let col = 0; col < line.length; col++) {
+        const ch = line[col];
+        if (ch === '.') continue;
+
+        let mat = blackMat;
+        if (ch === 'B') mat = darkBorder;
+        else if (ch === 'C') mat = brassMat;
+        else if (ch === 'S') mat = sparkMat;
+        else if (ch === 'W') mat = whiteMat;
+
+        const voxel = new THREE.Mesh(boxGeo, mat);
+        voxel.position.set(
+          (col - 4.5) * pixelSize,
+          (9 - row) * pixelSize + 0.35,
+          0
+        );
+        voxel.castShadow = true;
+        group.add(voxel);
+      }
+    }
+
+    const ringGeo = new THREE.TorusGeometry(0.65, 0.04, 6, 16);
+    const ringMat = new THREE.MeshBasicMaterial({ color: 0xef4444, transparent: true, opacity: 0.65 });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.rotation.x = Math.PI / 2;
+    ring.position.y = 0.8;
+    group.add(ring);
+
+    return group;
+  }
+
+  // 6. Pixel Titan Power Glove
+  private buildPixelGlove(): THREE.Group {
+    const group = new THREE.Group();
+    const pixelSize = 0.12;
+    const depth = 0.28;
+
+    const purpleMat = new THREE.MeshLambertMaterial({ color: 0x8b5cf6, emissive: 0x2e1065 });
+    const goldMat = new THREE.MeshLambertMaterial({ color: 0xf59e0b });
+    const cyanMat = new THREE.MeshLambertMaterial({ color: 0x06b6d4 });
+    const darkMat = new THREE.MeshLambertMaterial({ color: 0x18181b });
+
+    const gloveMap = [
+      '..BBBBBB..',
+      '.BGGGGGBB.',
+      'BGGGGGGGGB',
+      'BKKGGGGGGB',
+      'BKKGGGGGGB',
+      '.BGGGGGGB.',
+      '..BCCCCB..',
+      '..BCCCCB..',
+      '..BBBBBB..',
+    ];
+
+    const boxGeo = new THREE.BoxGeometry(pixelSize, pixelSize, depth);
+
+    for (let row = 0; row < gloveMap.length; row++) {
+      const line = gloveMap[row];
+      for (let col = 0; col < line.length; col++) {
+        const ch = line[col];
+        if (ch === '.') continue;
+
+        let mat = purpleMat;
+        if (ch === 'B') mat = darkMat;
+        else if (ch === 'K') mat = goldMat;
+        else if (ch === 'C') mat = cyanMat;
+        else if (ch === 'G') mat = purpleMat;
+
+        const voxel = new THREE.Mesh(boxGeo, mat);
+        voxel.position.set(
+          (col - 4.5) * pixelSize,
+          (8 - row) * pixelSize + 0.35,
+          0
+        );
+        voxel.castShadow = true;
+        group.add(voxel);
+      }
+    }
+
+    const ringGeo = new THREE.TorusGeometry(0.65, 0.04, 6, 16);
+    const ringMat = new THREE.MeshBasicMaterial({ color: 0xa855f7, transparent: true, opacity: 0.65 });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.rotation.x = Math.PI / 2;
+    ring.position.y = 0.8;
+    group.add(ring);
+
+    return group;
+  }
+
+  // 7. Pixel Surprise Crate
+  private buildPixelCrate(): THREE.Group {
+    const group = new THREE.Group();
+
+    // Chunky Wood Crate Block
+    const crateGeo = new THREE.BoxGeometry(1.2, 1.2, 1.2);
+    const crateMat = new THREE.MeshLambertMaterial({ color: 0xb45309 });
+    const crateMesh = new THREE.Mesh(crateGeo, crateMat);
+    crateMesh.position.y = 0.6;
+    crateMesh.castShadow = true;
+    group.add(crateMesh);
+
+    // Dark Iron Pixel Edges
+    const borderMat = new THREE.MeshLambertMaterial({ color: 0x27272a });
+
+    // Corner brackets
+    const bracketGeo = new THREE.BoxGeometry(0.35, 0.35, 1.22);
+    const b1 = new THREE.Mesh(bracketGeo, borderMat);
+    b1.position.set(-0.45, 0.45 + 0.6 - 0.45, 0);
+    const b2 = new THREE.Mesh(bracketGeo, borderMat);
+    b2.position.set(0.45, 0.45 + 0.6 - 0.45, 0);
+    group.add(b1, b2);
+
+    // Glowing Question Mark '?' pixel badge
+    const qMat = new THREE.MeshBasicMaterial({ color: 0xfacc15 });
+    const qGeo = new THREE.BoxGeometry(0.18, 0.18, 1.24);
+    const qMesh = new THREE.Mesh(qGeo, qMat);
+    qMesh.position.set(0, 0.65, 0);
+    group.add(qMesh);
+
+    return group;
   }
 }
