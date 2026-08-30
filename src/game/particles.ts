@@ -236,23 +236,32 @@ export class ParticleSystem3D {
   // 3D Pixel Pop-up Text for Damage %, Coins & Smash alerts
   public createFloatingText(position: THREE.Vector3, text: string, color: string = '#fbbf24') {
     const canvas = document.createElement('canvas');
-    canvas.width = 256;
-    canvas.height = 64;
+    canvas.width = 512;
+    canvas.height = 96;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     ctx.imageSmoothingEnabled = false;
 
+    // Draw high-contrast backdrop pill
+    ctx.fillStyle = 'rgba(9, 10, 20, 0.88)';
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.roundRect(8, 8, 496, 80, 12);
+    ctx.fill();
+    ctx.stroke();
+
     // Draw pixel text with thick outline
-    ctx.font = 'bold 24px "Press Start 2P", monospace';
+    ctx.font = 'bold 22px "Press Start 2P", monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
     ctx.strokeStyle = '#000000';
-    ctx.lineWidth = 8;
-    ctx.strokeText(text, 128, 32);
+    ctx.lineWidth = 6;
+    ctx.strokeText(text, 256, 48);
 
     ctx.fillStyle = color;
-    ctx.fillText(text, 128, 32);
+    ctx.fillText(text, 256, 48);
 
     const texture = new THREE.CanvasTexture(canvas);
     texture.magFilter = THREE.NearestFilter;
@@ -264,16 +273,16 @@ export class ParticleSystem3D {
       depthTest: false,
     });
     const sprite = new THREE.Sprite(spriteMat);
-    sprite.scale.set(3.2, 0.8, 1);
+    sprite.scale.set(4.2, 0.85, 1);
     sprite.position.copy(position);
     sprite.position.y += 2.0;
 
     this.scene.add(sprite);
     this.floatingTexts.push({
       mesh: sprite,
-      velocity: new THREE.Vector3((Math.random() - 0.5) * 1.5, 3.5, (Math.random() - 0.5) * 1.5),
-      life: 0.9,
-      maxLife: 0.9,
+      velocity: new THREE.Vector3((Math.random() - 0.5) * 0.8, 2.8, (Math.random() - 0.5) * 0.8),
+      life: 1.2,
+      maxLife: 1.2,
     });
   }
 

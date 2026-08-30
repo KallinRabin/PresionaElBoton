@@ -715,11 +715,16 @@ export class Character3D {
   ) {
     if (this.invulnerableTimer > 0 || this.stats.isRespawning) return;
 
-    // Check Energy Shield (Power-up Item)
+    // Check Energy Shield (Power-up Item: 1-Hit Absorption Shield)
     if (this.stats.activeItem === 'shield' || this.stats.hasInvincibleShield) {
+      this.stats.activeItem = null;
+      this.stats.hasInvincibleShield = false;
+      this.stats.itemTimeLeft = 0;
+      this.invulnerableTimer = 0.35; // Brief i-frames
       this.particles.createHitSparks(this.group.position, true);
       this.particles.createSparkles(this.group.position, '#06b6d4');
-      this.particles.createFloatingText(this.group.position, '¡ESCUDO BLOQUEÓ!', '#06b6d4');
+      this.particles.createFloatingText(this.group.position, '🛡️ ¡ESCUDO ABSORBIÓ GOLPE! (ROTO)', '#06b6d4');
+      sound.playSmashPunch(false);
       return;
     }
 

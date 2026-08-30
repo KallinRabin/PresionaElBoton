@@ -19,10 +19,9 @@ export const BATTLE_ITEMS: BattleItemDef[] = [
   {
     type: 'shield',
     name: 'Escudo de Energía',
-    description: 'Barrera holográfica invulnerable por 7s. Absorbe todo el daño rival y anula el retroceso.',
+    description: 'Barrera holográfica que absorbe 1 impacto rival directo, anulando por completo el daño y empuje recibido.',
     icon: '🛡️',
     color: '#06b6d4',
-    duration: 7,
   },
   {
     type: 'bat',

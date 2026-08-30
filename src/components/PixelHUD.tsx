@@ -228,11 +228,34 @@ export const PixelHUD: React.FC<PixelHUDProps> = ({
 
         {/* ACTIVE ITEM BUFF ALERT */}
         {activeItemDef && (
-          <div className="self-center pixel-box-gold px-2.5 py-0.5 flex items-center gap-1.5 animate-bounce pointer-events-none mt-0.5">
-            <span className="text-sm">{activeItemDef.icon}</span>
-            <span className="font-pixel-heading text-[8px] sm:text-[9px] text-black font-bold">
-              ¡{activeItemDef.name.toUpperCase()} ACTIVO! ({Math.ceil(playerStats.itemTimeLeft)}s)
-            </span>
+          <div
+            id="hud-active-item-banner"
+            className="self-center px-3.5 py-1.5 flex items-center gap-2.5 animate-pixel-float pointer-events-none mt-1 shadow-2xl border-2 rounded-sm"
+            style={{
+              backgroundColor: 'rgba(9, 10, 20, 0.94)',
+              borderColor: activeItemDef.color || '#f59e0b',
+              boxShadow: `0 0 16px ${activeItemDef.color}55`,
+            }}
+          >
+            <span className="text-xl sm:text-2xl animate-bounce">{activeItemDef.icon}</span>
+            <div className="text-left">
+              <div className="flex items-center gap-2">
+                <span
+                  className="font-pixel-heading text-[9px] sm:text-[11px] font-extrabold uppercase tracking-wide"
+                  style={{ color: activeItemDef.color }}
+                >
+                  ¡{activeItemDef.name.toUpperCase()}!
+                </span>
+                {playerStats.itemTimeLeft > 0 && (
+                  <span className="font-pixel-body text-[8px] sm:text-[9px] text-white bg-zinc-800 border border-zinc-600 px-1.5 py-0.2 rounded font-bold">
+                    ⏱️ {Math.ceil(playerStats.itemTimeLeft)}s
+                  </span>
+                )}
+              </div>
+              <div className="font-pixel-body text-[8px] sm:text-[9px] text-zinc-300 font-medium leading-tight">
+                {activeItemDef.description}
+              </div>
+            </div>
           </div>
         )}
 

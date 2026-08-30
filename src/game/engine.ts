@@ -652,6 +652,7 @@ export class GameEngine3D {
 
           if (isHomeRunBat) {
             sound.playHomeRunBat();
+            this.particleSystem.createFloatingText(target.group.position, '💥 ¡HOME-RUN CRÍTICO!', '#f59e0b');
           }
 
           target.receiveHit(attacker, baseDamage, baseKnockback, isHomeRunBat || isIcePunch || isAbility);
@@ -706,6 +707,7 @@ export class GameEngine3D {
           this.world.removeItem(this.scene, item.id);
           this.particleSystem.createExplosion(itemPos);
           this.particleSystem.createCoinBurst(itemPos, 15);
+          this.particleSystem.createFloatingText(itemPos, '📦 ¡CAJA ROTA! (+BOTÍN)', '#f59e0b');
           attacker.stats.coins += 20;
           sound.playCoin();
           // Spawn another item from crate
@@ -1367,26 +1369,27 @@ export class GameEngine3D {
             sound.playDamageHeal();
             char.stats.damagePercent = Math.max(0, char.stats.damagePercent - 70);
             this.particleSystem.createSparkles(char.group.position, '#ef4444');
-            this.particleSystem.createFloatingText(char.group.position, '¡-70% DAÑO!', '#ef4444');
+            this.particleSystem.createFloatingText(char.group.position, '❤️ ¡VIDA! (-70% DAÑO)', '#ef4444');
           } else if (item.type === 'potion') {
             char.stats.itemTimeLeft = 10;
             char.stats.hasSpeedBoost = true;
             this.particleSystem.createSparkles(char.group.position, '#c026d3');
-            this.particleSystem.createFloatingText(char.group.position, '¡SUPER VELOCIDAD!', '#c026d3');
+            this.particleSystem.createFloatingText(char.group.position, '🧪 ¡POCIÓN: +65% VELOCIDAD!', '#c026d3');
           } else if (item.type === 'shield') {
-            char.stats.itemTimeLeft = 7;
+            char.stats.itemTimeLeft = 10;
             char.stats.hasInvincibleShield = true;
             this.particleSystem.createSparkles(char.group.position, '#06b6d4');
-            this.particleSystem.createFloatingText(char.group.position, '¡ESCUDO INVENCIBLE!', '#06b6d4');
+            this.particleSystem.createFloatingText(char.group.position, '🛡️ ¡ESCUDO: PROTEGE 1 GOLPE!', '#06b6d4');
           } else if (item.type === 'bat') {
             char.batMesh.visible = true;
-            this.particleSystem.createFloatingText(char.group.position, '¡BATE SMASH!', '#f59e0b');
+            this.particleSystem.createFloatingText(char.group.position, '⚾ ¡BATE HOME-RUN!', '#f59e0b');
           } else if (item.type === 'giant_glove') {
             char.stats.hasGiantGlove = true;
-            this.particleSystem.createFloatingText(char.group.position, '¡GUANTELETE!', '#8b5cf6');
+            this.particleSystem.createFloatingText(char.group.position, '🥊 ¡GUANTE TITÁN COLOSAL!', '#8b5cf6');
           } else if (item.type === 'bomb') {
             // Explode bomb in area
             this.particleSystem.createExplosion(itemPos);
+            this.particleSystem.createFloatingText(itemPos, '💣 ¡EXPLOSIÓN BOOM!', '#dc2626');
             this.allCharacters.forEach((c) => {
               if (c !== char && c.group.position.distanceTo(itemPos) < 6) {
                 c.receiveHit(char, 24, 22, true);
