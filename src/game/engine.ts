@@ -12,12 +12,14 @@ import {
   KillBanner,
   TrailEffect,
   EliminationEvent,
+  BattleNotification,
   ArenaId,
   CrazyButtonEvent,
   RoomInfo,
   PlayerNetState,
 } from '../types';
 import { PLAYER_CLASSES } from '../data/classes';
+import { BATTLE_ITEMS } from '../data/items';
 import { INITIAL_SKINS, INITIAL_BANNERS } from '../data/shopItems';
 import { ARENAS } from '../data/arenas';
 import { Character3D } from './characters';
@@ -95,9 +97,23 @@ export class GameEngine3D {
   public onMatchEnd: ((result: MatchResult) => void) | null = null;
   public onPlayerEliminated: ((killerStats: PlayerStats | null, killerBanner: KillBanner | null) => void) | null = null;
   public onKillElimination: ((event: EliminationEvent) => void) | null = null;
+  public onBattleNotification: ((notif: BattleNotification) => void) | null = null;
   public onSpectateTargetChange: ((targetStats: PlayerStats) => void) | null = null;
   public onPointerLockExit: (() => void) | null = null;
   public cameraSensitivityMultiplier: number = 1.0;
+
+  public emitBattleNotification(icon: string, text: string, detail?: string, color: string = '#fbbf24') {
+    if (this.onBattleNotification) {
+      this.onBattleNotification({
+        id: 'notif_' + Math.random().toString(36).substring(2, 7) + '_' + Date.now(),
+        icon,
+        text,
+        detail,
+        color,
+        timestamp: Date.now(),
+      });
+    }
+  }
 
   // Animation Frame & Clock
   private animationFrameId: number | null = null;
@@ -376,6 +392,23 @@ export class GameEngine3D {
     this.plantedMines = [];
     this.particleSystem.clearAll();
 
+    const attachCharEvents = (char: Character3D) => {
+      char.onStealEvent = (isRobber, amount, otherName) => {
+        if (char.isPlayer) {
+          if (isRobber) {
+            this.emitBattleNotification('🪙', `+${amount} Monedas robadas`, `Robaste a ${otherName}`, '#f59e0b');
+          } else {
+            this.emitBattleNotification('⚠️', `-${amount} Monedas perdidas`, `${otherName} te ha robado`, '#ef4444');
+          }
+        }
+      };
+      char.onShieldBreakEvent = () => {
+        if (char.isPlayer) {
+          this.emitBattleNotification('🛡️', '¡Escudo absorbió el golpe!', 'Tu barrera se rompió tras protegerte', '#06b6d4');
+        }
+      };
+    };
+
     if (isMultiplayer && roomInfo) {
       // MULTIPLAYER MATCH: Setup local player + remote peers
       const localId = networkManager.localPlayerId;
@@ -392,6 +425,7 @@ export class GameEngine3D {
         localId,
         localTeam
       );
+      attachCharEvents(this.player);
       const localSpawn = spawns && spawns[localId] !== undefined ? spawns[localId] : 0;
       this.player.group.position.copy(this.world.spawnPads[localSpawn % this.world.spawnPads.length]);
       this.scene.add(this.player.group);
@@ -411,6 +445,7 @@ export class GameEngine3D {
           p.id,
           p.team
         );
+        attachCharEvents(remoteChar);
         const spawnIdx = spawns && spawns[p.id] !== undefined ? spawns[p.id] : 1;
         remoteChar.group.position.copy(this.world.spawnPads[spawnIdx % this.world.spawnPads.length]);
         this.scene.add(remoteChar.group);
@@ -423,6 +458,7 @@ export class GameEngine3D {
       // SOLO OFFLINE MATCH: Create Player + 3 Bots
       const finalPlayerName = playerName.trim() ? playerName.trim().toUpperCase() : 'JUGADOR';
       this.player = new Character3D(true, playerSkin, playerClassId, finalPlayerName, this.particleSystem);
+      attachCharEvents(this.player);
       this.player.group.position.copy(this.world.spawnPads[0]);
       this.scene.add(this.player.group);
       this.allCharacters.push(this.player);
@@ -453,6 +489,7 @@ export class GameEngine3D {
           botNames[i],
           this.particleSystem
         );
+        attachCharEvents(botChar);
         botChar.group.position.copy(this.world.spawnPads[(i + 1) % this.world.spawnPads.length]);
         this.scene.add(botChar.group);
         this.allCharacters.push(botChar);
@@ -652,7 +689,9 @@ export class GameEngine3D {
 
           if (isHomeRunBat) {
             sound.playHomeRunBat();
-            this.particleSystem.createFloatingText(target.group.position, '💥 ¡HOME-RUN CRÍTICO!', '#f59e0b');
+            if (attacker.isPlayer) {
+              this.emitBattleNotification('⚾', '¡Home-Run Crítico!', `Lanzaste a ${target.stats.name}`, '#f59e0b');
+            }
           }
 
           target.receiveHit(attacker, baseDamage, baseKnockback, isHomeRunBat || isIcePunch || isAbility);
@@ -662,6 +701,9 @@ export class GameEngine3D {
             target.applyFreeze(1.0);
             attacker.hasIceCharge = false;
             attacker.stats.hasIceCharged = false;
+            if (attacker.isPlayer) {
+              this.emitBattleNotification('❄️', '¡Congelamiento Helado!', `Congelaste a ${target.stats.name} (1.0s)`, '#38bdf8');
+            }
           }
 
           if (this.isMultiplayer && attacker === this.player) {
@@ -688,6 +730,10 @@ export class GameEngine3D {
         // Drop bonus item
         this.world.spawnItem(this.scene);
 
+        if (attacker.isPlayer) {
+          this.emitBattleNotification('🔘', '¡Pulsaste el Botón Central!', '+25 monedas ganadas', '#fbbf24');
+        }
+
         if (this.isMultiplayer && attacker === this.player) {
           networkManager.sendButtonPress({ byPlayerId: networkManager.localPlayerId });
         }
@@ -707,9 +753,13 @@ export class GameEngine3D {
           this.world.removeItem(this.scene, item.id);
           this.particleSystem.createExplosion(itemPos);
           this.particleSystem.createCoinBurst(itemPos, 15);
-          this.particleSystem.createFloatingText(itemPos, '📦 ¡CAJA ROTA! (+BOTÍN)', '#f59e0b');
           attacker.stats.coins += 20;
           sound.playCoin();
+
+          if (attacker.isPlayer) {
+            this.emitBattleNotification('📦', '¡Caja Sorpresa Destruida!', '+20 monedas y nuevo objeto', '#f59e0b');
+          }
+
           // Spawn another item from crate
           this.world.spawnItem(this.scene);
         }
@@ -718,11 +768,12 @@ export class GameEngine3D {
   }
 
   private executeCrazyButtonPower(presser: Character3D, event: CrazyButtonEvent) {
+    this.emitBattleNotification(event.icon, `¡Botón Loco: ${event.title}!`, event.description, event.glowColor || '#ef4444');
+
     if (event.type === 'titan_mode') {
       presser.setTitanMode(9.0);
       sound.playVictory();
       this.particleSystem.createSmashBlast(presser.group.position);
-      this.particleSystem.createFloatingText(presser.group.position, '¡MODO TITÁN!', '#f59e0b');
     } else if (event.type === 'shockwave_blast') {
       presser.stats.coins += 40;
       sound.playHomeRunBat();
@@ -1369,27 +1420,47 @@ export class GameEngine3D {
             sound.playDamageHeal();
             char.stats.damagePercent = Math.max(0, char.stats.damagePercent - 70);
             this.particleSystem.createSparkles(char.group.position, '#ef4444');
-            this.particleSystem.createFloatingText(char.group.position, '❤️ ¡VIDA! (-70% DAÑO)', '#ef4444');
+            if (char.isPlayer) {
+              this.emitBattleNotification('❤️', 'Corazón Pixel recogido', 'Restaura -70% de daño acumulado', '#ef4444');
+            } else {
+              this.emitBattleNotification('❤️', `${char.stats.name}`, 'Recogió Corazón Pixel (-70% Daño)', '#ef4444');
+            }
           } else if (item.type === 'potion') {
             char.stats.itemTimeLeft = 10;
             char.stats.hasSpeedBoost = true;
             this.particleSystem.createSparkles(char.group.position, '#c026d3');
-            this.particleSystem.createFloatingText(char.group.position, '🧪 ¡POCIÓN: +65% VELOCIDAD!', '#c026d3');
+            if (char.isPlayer) {
+              this.emitBattleNotification('🧪', 'Poción Mágica recogida', '+65% de velocidad y agilidad (10s)', '#c026d3');
+            } else {
+              this.emitBattleNotification('🧪', `${char.stats.name}`, 'Bebió Poción Mágica (+65% Velocidad)', '#c026d3');
+            }
           } else if (item.type === 'shield') {
             char.stats.itemTimeLeft = 10;
             char.stats.hasInvincibleShield = true;
             this.particleSystem.createSparkles(char.group.position, '#06b6d4');
-            this.particleSystem.createFloatingText(char.group.position, '🛡️ ¡ESCUDO: PROTEGE 1 GOLPE!', '#06b6d4');
+            if (char.isPlayer) {
+              this.emitBattleNotification('🛡️', 'Escudo de Energía recogido', 'Absorbe 1 impacto rival directo', '#06b6d4');
+            } else {
+              this.emitBattleNotification('🛡️', `${char.stats.name}`, 'Equipó Escudo de Energía (1 Golpe)', '#06b6d4');
+            }
           } else if (item.type === 'bat') {
             char.batMesh.visible = true;
-            this.particleSystem.createFloatingText(char.group.position, '⚾ ¡BATE HOME-RUN!', '#f59e0b');
+            if (char.isPlayer) {
+              this.emitBattleNotification('⚾', 'Bate Smash Dorado equipado', 'Potencia de Home-Run crítico', '#f59e0b');
+            } else {
+              this.emitBattleNotification('⚾', `${char.stats.name}`, 'Equipó Bate Smash Dorado', '#f59e0b');
+            }
           } else if (item.type === 'giant_glove') {
             char.stats.hasGiantGlove = true;
-            this.particleSystem.createFloatingText(char.group.position, '🥊 ¡GUANTE TITÁN COLOSAL!', '#8b5cf6');
+            if (char.isPlayer) {
+              this.emitBattleNotification('🥊', 'Guantelete Titán equipado', 'Doble alcance y empuje masivo', '#8b5cf6');
+            } else {
+              this.emitBattleNotification('🥊', `${char.stats.name}`, 'Activó Guantelete Titán', '#8b5cf6');
+            }
           } else if (item.type === 'bomb') {
             // Explode bomb in area
             this.particleSystem.createExplosion(itemPos);
-            this.particleSystem.createFloatingText(itemPos, '💣 ¡EXPLOSIÓN BOOM!', '#dc2626');
+            this.emitBattleNotification('💣', '¡Bomba detonada!', 'Onda expansiva en área', '#dc2626');
             this.allCharacters.forEach((c) => {
               if (c !== char && c.group.position.distanceTo(itemPos) < 6) {
                 c.receiveHit(char, 24, 22, true);

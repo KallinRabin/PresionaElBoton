@@ -56,6 +56,10 @@ export class Character3D {
   public networkId?: string;
   public team?: 'red' | 'blue';
 
+  // UI / HUD Event Notifications
+  public onStealEvent?: (isRobber: boolean, amount: number, otherName: string) => void;
+  public onShieldBreakEvent?: () => void;
+
   // Animation Timers
   private walkCycle: number = 0;
   private particles: ParticleSystem3D;
@@ -723,7 +727,7 @@ export class Character3D {
       this.invulnerableTimer = 0.35; // Brief i-frames
       this.particles.createHitSparks(this.group.position, true);
       this.particles.createSparkles(this.group.position, '#06b6d4');
-      this.particles.createFloatingText(this.group.position, '🛡️ ¡ESCUDO ABSORBIÓ GOLPE! (ROTO)', '#06b6d4');
+      if (this.onShieldBreakEvent) this.onShieldBreakEvent();
       sound.playSmashPunch(false);
       return;
     }
@@ -731,7 +735,6 @@ export class Character3D {
     // Check Reflect Shield (Iron Guardian)
     if (this.stats.hasReflectShield) {
       this.particles.createHitSparks(this.group.position, true);
-      this.particles.createFloatingText(this.group.position, '¡REFLEJADO!', '#38bdf8');
       // Reflect back to attacker
       const reflectDir = new THREE.Vector3()
         .subVectors(attacker.group.position, this.group.position)
@@ -759,16 +762,13 @@ export class Character3D {
       this.stats.stealsSuffered++;
       attacker.stats.stealsDone++;
       this.particles.createCoinBurst(this.group.position, Math.min(12, coinsToSteal));
-      this.particles.createFloatingText(
-        this.group.position,
-        `-${coinsToSteal} 🪙`,
-        '#ef4444'
-      );
-      this.particles.createFloatingText(
-        attacker.group.position,
-        `+${coinsToSteal} 🪙`,
-        '#f59e0b'
-      );
+
+      if (attacker.onStealEvent) {
+        attacker.onStealEvent(true, coinsToSteal, this.stats.name);
+      }
+      if (this.onStealEvent) {
+        this.onStealEvent(false, coinsToSteal, attacker.stats.name);
+      }
     }
 
     const classDef = PLAYER_CLASSES.find((c) => c.id === this.classId) || PLAYER_CLASSES[0];

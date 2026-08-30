@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PlayerStats, GameEvent, ButtonSkin, EliminationEvent, CrazyButtonEvent } from '../types';
+import { PlayerStats, GameEvent, ButtonSkin, EliminationEvent, CrazyButtonEvent, BattleNotification } from '../types';
 import { PLAYER_CLASSES } from '../data/classes';
 import { BATTLE_ITEMS } from '../data/items';
 import { VirtualJoystick } from './VirtualJoystick';
@@ -13,6 +13,7 @@ interface PixelHUDProps {
   isTitanActive?: boolean;
   buttonSkin?: ButtonSkin;
   recentKillEvent?: EliminationEvent | null;
+  battleNotifications?: BattleNotification[];
   onPunch: () => void;
   onAbility: () => void;
   onJump: () => void;
@@ -30,6 +31,7 @@ export const PixelHUD: React.FC<PixelHUDProps> = ({
   isTitanActive,
   buttonSkin,
   recentKillEvent,
+  battleNotifications = [],
   onPunch,
   onAbility,
   onJump,
@@ -309,24 +311,58 @@ export const PixelHUD: React.FC<PixelHUDProps> = ({
 
       {/* 3. BOTTOM TACTICAL CONTROLS */}
       <div className="flex items-end justify-between gap-3 w-full pointer-events-none z-10">
-        {/* LEFT: Touch Joystick / Keyboard & Mouse Look Hint */}
-        <div className="pointer-events-auto">
-          {isTouchDevice ? (
-            <VirtualJoystick onMove={onJoystickMove} />
-          ) : (
-            <div className="pixel-box-dark p-2 bg-black/80 hidden sm:block border-zinc-700/80 shadow-lg">
-              <div className="text-[9px] font-pixel-body text-zinc-300 space-y-1">
-                <div className="flex items-center gap-1.5 text-sky-300 font-bold">
-                  <span>🖱️</span>
-                  <span>Mover Ratón: Girar Cámara / Apuntar</span>
+        {/* LEFT: Live Battle Action Notifications Feed + Controls Hint */}
+        <div className="pointer-events-none flex flex-col items-start gap-1.5 max-w-xs sm:max-w-sm mb-1">
+          {/* BATTLE LOG / ACTION NOTIFICATIONS FEED */}
+          {battleNotifications && battleNotifications.length > 0 && (
+            <div className="flex flex-col gap-1 w-full animate-pixel-fade-in pointer-events-none mb-0.5">
+              {battleNotifications.map((notif) => (
+                <div
+                  key={notif.id}
+                  className="px-2.5 py-1.5 bg-black/90 border-l-4 flex items-center gap-2 shadow-2xl backdrop-blur-sm rounded-none animate-pixel-float"
+                  style={{
+                    borderColor: notif.color || '#f59e0b',
+                    boxShadow: `0 0 10px ${notif.color}44`,
+                  }}
+                >
+                  <span className="text-base shrink-0 animate-bounce">{notif.icon}</span>
+                  <div className="text-left leading-tight truncate">
+                    <div
+                      className="font-pixel-heading text-[8px] sm:text-[9px] font-bold truncate"
+                      style={{ color: notif.color }}
+                    >
+                      {notif.text}
+                    </div>
+                    {notif.detail && (
+                      <div className="font-pixel-body text-[7px] sm:text-[8px] text-zinc-300 truncate">
+                        {notif.detail}
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div><span className="text-yellow-300">[W,A,S,D]</span> Moverse hacia la mira</div>
-                <div><span className="text-emerald-400">[ESPACIO]</span> Saltar / Doble Salto Aéreo</div>
-                <div><span className="text-red-400">[Click Izq / F]</span> Golpe de Guante (Robo)</div>
-                <div><span className="text-purple-400">[E]</span> Habilidad: {playerClass.ability.name}</div>
-              </div>
+              ))}
             </div>
           )}
+
+          {/* Touch Joystick / Keyboard & Mouse Look Hint */}
+          <div className="pointer-events-auto">
+            {isTouchDevice ? (
+              <VirtualJoystick onMove={onJoystickMove} />
+            ) : (
+              <div className="pixel-box-dark p-2 bg-black/85 hidden sm:block border-zinc-700/80 shadow-lg">
+                <div className="text-[8px] sm:text-[9px] font-pixel-body text-zinc-300 space-y-1">
+                  <div className="flex items-center gap-1.5 text-sky-300 font-bold">
+                    <span>🖱️</span>
+                    <span>Mover Ratón: Girar Cámara / Apuntar</span>
+                  </div>
+                  <div><span className="text-yellow-300">[W,A,S,D]</span> Moverse hacia la mira</div>
+                  <div><span className="text-emerald-400">[ESPACIO]</span> Saltar / Doble Salto Aéreo</div>
+                  <div><span className="text-red-400">[Click Izq / F]</span> Golpe de Guante (Robo)</div>
+                  <div><span className="text-purple-400">[E]</span> Habilidad: {playerClass.ability.name}</div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* RIGHT: Action & Class Ability Buttons */}

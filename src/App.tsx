@@ -18,6 +18,7 @@ import {
   GameSettings,
   ClassId,
   EliminationEvent,
+  BattleNotification,
   ArenaId,
   CrazyButtonEvent,
   DailyMission,
@@ -166,6 +167,7 @@ export default function App() {
   const [currentEvent, setCurrentEvent] = useState<GameEvent | null>(null);
   const [crazyButtonEvent, setCrazyButtonEvent] = useState<CrazyButtonEvent | null>(null);
   const [recentKillEvent, setRecentKillEvent] = useState<EliminationEvent | null>(null);
+  const [battleNotifications, setBattleNotifications] = useState<BattleNotification[]>([]);
 
   // Elimination & Spectator States
   const [isEliminatedModalOpen, setIsEliminatedModalOpen] = useState(false);
@@ -349,6 +351,13 @@ export default function App() {
       setTimeout(() => {
         setRecentKillEvent((current) => (current?.timestamp === event.timestamp ? null : current));
       }, 3500);
+    };
+
+    engine.onBattleNotification = (notif) => {
+      setBattleNotifications((prev) => [notif, ...prev.slice(0, 3)]);
+      setTimeout(() => {
+        setBattleNotifications((prev) => prev.filter((n) => n.id !== notif.id));
+      }, 3800);
     };
 
     engine.onPlayerEliminated = (killer, banner) => {
@@ -734,6 +743,7 @@ export default function App() {
           isTitanActive={engineRef.current?.player?.isTitan}
           buttonSkin={currentButtonSkin}
           recentKillEvent={recentKillEvent}
+          battleNotifications={battleNotifications}
           onPunch={() => engineRef.current?.playerPunch()}
           onAbility={() => engineRef.current?.playerAbility()}
           onJump={() => engineRef.current?.playerJump()}
@@ -755,6 +765,7 @@ export default function App() {
             isTitanActive={false}
             buttonSkin={currentButtonSkin}
             recentKillEvent={recentKillEvent}
+            battleNotifications={battleNotifications}
             onPunch={() => {}}
             onAbility={() => {}}
             onJump={() => {}}

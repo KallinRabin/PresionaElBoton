@@ -110,6 +110,15 @@ export interface EliminationEvent {
   timestamp: number;
 }
 
+export interface BattleNotification {
+  id: string;
+  icon: string;
+  text: string;
+  detail?: string;
+  color: string;
+  timestamp: number;
+}
+
 export interface TrailEffect {
   id: string;
   name: string;
