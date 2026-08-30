@@ -822,12 +822,6 @@ export class Character3D {
       }
       this.stats.isStunned = true;
     }
-
-    this.particles.createFloatingText(
-      this.group.position,
-      `+${Math.round(baseDamage)}%`,
-      damageColor
-    );
   }
 
   public respawn(spawnPos: THREE.Vector3) {
