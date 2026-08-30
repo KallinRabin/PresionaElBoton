@@ -431,32 +431,25 @@ export class Character3D {
     // --- ARMS: Singularity Staff (Right) & Telekinetic Orbiting Meteorites (Left) ---
     const armGeo = new THREE.BoxGeometry(0.2, 0.36, 0.2);
 
-    // RIGHT ARM + Ancient Singularity Staff
+    // RIGHT ARM + Ancient Singularity Staff (Exclusively on right hand)
     this.rightArmMesh = new THREE.Group();
     this.rightArmMesh.position.set(0.48, 0.88, 0);
     const rightArm = new THREE.Mesh(armGeo, robeMat);
     rightArm.position.set(0, -0.14, 0);
+    const handR = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.16, 0.18), skinMat);
+    handR.position.set(0, -0.36, 0.08);
 
     const staffGroup = this.createSingularityStaff(woodMat, vortexMat, blackHoleMat, rockMat);
-    staffGroup.position.set(0.15, -0.35, 0.2);
-    this.rightArmMesh.add(rightArm, staffGroup);
+    staffGroup.position.set(0.08, -0.35, 0.15);
+    this.rightArmMesh.add(rightArm, handR, staffGroup);
 
-    // LEFT ARM + Telekinetic Floating Orbiting Rocks
+    // LEFT ARM (Natural casting hand, without any extra objects)
     this.leftArmMesh = new THREE.Group();
     this.leftArmMesh.position.set(-0.48, 0.88, 0.05);
     const leftArm = new THREE.Mesh(armGeo, robeMat);
     leftArm.position.set(0, -0.14, 0);
     const handL = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.16, 0.18), skinMat);
     handL.position.set(0, -0.36, 0.08);
-
-    // Levitating Orbiting Meteorite Rocks above hand
-    const rock1 = new THREE.Mesh(new THREE.DodecahedronGeometry(0.08, 0), rockMat);
-    rock1.position.set(0.02, 0.16, 0.12);
-    const rock2 = new THREE.Mesh(new THREE.DodecahedronGeometry(0.06, 0), rockMat);
-    rock2.position.set(-0.12, 0.22, 0.06);
-    const rock3 = new THREE.Mesh(new THREE.DodecahedronGeometry(0.07, 0), rockMat);
-    rock3.position.set(0.1, 0.26, -0.04);
-    handL.add(rock1, rock2, rock3);
 
     this.leftArmMesh.add(leftArm, handL);
 
