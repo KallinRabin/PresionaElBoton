@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { CharacterSkin, ButtonSkin, KillBanner, ClassId } from '../types';
 import { PLAYER_CLASSES } from '../data/classes';
+import { resolveEquippedSkin } from '../data/shopItems';
 import { sound } from '../game/audio';
 
 interface ShopModalProps {
@@ -11,12 +12,16 @@ interface ShopModalProps {
   selectedSkinId: string;
   selectedButtonSkinId: string;
   selectedBannerId: string;
+  selectedClassId?: ClassId;
   onBuySkin: (skinId: string) => void;
   onEquipSkin: (skinId: string) => void;
+  onUnequipSkin?: (skinId: string) => void;
   onBuyButtonSkin: (btnId: string) => void;
   onEquipButtonSkin: (btnId: string) => void;
+  onUnequipButtonSkin?: (btnId: string) => void;
   onBuyBanner: (bannerId: string) => void;
   onEquipBanner: (bannerId: string) => void;
+  onUnequipBanner?: (bannerId: string) => void;
   onClose: () => void;
 }
 
@@ -28,16 +33,25 @@ export const ShopModal: React.FC<ShopModalProps> = ({
   selectedSkinId,
   selectedButtonSkinId,
   selectedBannerId,
+  selectedClassId = 'brawler',
   onBuySkin,
   onEquipSkin,
+  onUnequipSkin,
   onBuyButtonSkin,
   onEquipButtonSkin,
+  onUnequipButtonSkin,
   onBuyBanner,
   onEquipBanner,
+  onUnequipBanner,
   onClose,
 }) => {
   const [activeTab, setActiveTab] = useState<'characters' | 'buttons' | 'banners'>('characters');
   const [selectedCharacterId, setSelectedCharacterId] = useState<string | null>(null);
+
+  const activeSkin = resolveEquippedSkin(selectedSkinId, selectedClassId, skins);
+  const activeClassDef = PLAYER_CLASSES.find((c) => c.id === selectedClassId) || PLAYER_CLASSES[0];
+  const activeBtn = buttonSkins.find((b) => b.id === selectedButtonSkinId) || buttonSkins[0];
+  const activeBanner = banners.find((b) => b.id === selectedBannerId) || banners[0];
 
   const selectedClass = PLAYER_CLASSES.find((c) => c.id === selectedCharacterId);
   const characterSkins = skins.filter((skin) => {
@@ -50,15 +64,19 @@ export const ShopModal: React.FC<ShopModalProps> = ({
     <div className="fixed inset-0 z-30 flex items-center justify-center p-2 sm:p-4 bg-black/85 backdrop-blur-sm select-none">
       <div
         id="shop-modal-container"
-        className="pixel-box-dark w-full max-w-4xl max-h-[92vh] flex flex-col bg-zinc-950 p-3 sm:p-5 text-white overflow-hidden"
+        className="pixel-box-dark w-full max-w-4xl max-h-[94vh] flex flex-col bg-zinc-950 p-3 sm:p-5 text-white overflow-hidden border-4 border-amber-500 shadow-2xl"
       >
         {/* HEADER */}
-        <div className="flex items-center justify-between border-b-2 sm:border-b-4 border-zinc-800 pb-2 sm:pb-3 mb-3">
+        <div className="flex items-center justify-between border-b-2 sm:border-b-4 border-zinc-800 pb-2 sm:pb-3 mb-2.5">
           <div className="flex items-center gap-2 sm:gap-3">
-            <span className="text-2xl sm:text-3xl">🛒</span>
+            <span className="text-2xl sm:text-3xl animate-pixel-float">🛒</span>
             <div>
-              <h2 className="font-pixel-heading text-sm sm:text-lg text-yellow-400">TIENDA Y ARMERÍA ARCADE</h2>
-              <div className="font-pixel-body text-[10px] sm:text-xs text-zinc-400">Personaliza tus luchadores, pulsador 3D y estandartes</div>
+              <h2 className="font-pixel-heading text-sm sm:text-lg text-yellow-400 pixel-text-stroke">
+                TIENDA Y ARMERÍA ARCADE
+              </h2>
+              <div className="font-pixel-body text-[10px] sm:text-xs text-zinc-400">
+                Equipa aspectos estándar, skins desbloqueables, pulsadores y banners
+              </div>
             </div>
           </div>
 
@@ -81,6 +99,36 @@ export const ShopModal: React.FC<ShopModalProps> = ({
               [X] SALIR
             </button>
           </div>
+        </div>
+
+        {/* ACTIVE EQUIPPED ITEM STATUS BAR */}
+        <div className="bg-zinc-900/90 border-2 border-zinc-700 px-3 py-1.5 mb-2.5 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-[9px] font-pixel-body text-amber-400 font-bold uppercase shrink-0">
+              EQUIPAMIENTO ACTUAL:
+            </span>
+            <div className="flex items-center gap-1.5 bg-black/60 px-2 py-0.5 border border-zinc-700 truncate">
+              <span className="text-xs">{activeClassDef.icon}</span>
+              <span className="font-pixel-heading text-[10px] text-zinc-300 truncate">{activeClassDef.name}</span>
+              <span className="text-zinc-500">|</span>
+              <span className="font-pixel-heading text-[10px] text-yellow-300 truncate">
+                🎽 {activeSkin.name} {activeSkin.price === 0 ? '(Estándar)' : ''}
+              </span>
+            </div>
+          </div>
+
+          {activeSkin.price > 0 && onUnequipSkin && (
+            <button
+              onClick={() => {
+                sound.playCoin();
+                onUnequipSkin(activeSkin.id);
+              }}
+              className="pixel-btn pixel-box-dark px-2 py-0.5 text-[9px] font-pixel-heading text-amber-300 hover:text-white border border-amber-500/60"
+              title="Volver a la skin estándar del personaje"
+            >
+              DESEQUIPAR SKIN ✕
+            </button>
+          )}
         </div>
 
         {/* TABS */}
@@ -130,20 +178,24 @@ export const ShopModal: React.FC<ShopModalProps> = ({
 
         {/* CONTENT */}
         <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar">
-          {/* TAB 1: CHARACTERS (BRAWL STARS STYLE) */}
+          {/* TAB 1: CHARACTERS */}
           {activeTab === 'characters' && (
             <div>
               {/* VIEW A: CHARACTER SELECTION HUB */}
               {selectedCharacterId === null ? (
                 <div className="space-y-2">
-                  <div className="text-[11px] font-pixel-body text-zinc-400 mb-1">
-                    Selecciona un personaje para ver y equipar su catálogo de skins exclusivas:
+                  <div className="text-[11px] font-pixel-body text-zinc-400 mb-1 flex items-center justify-between">
+                    <span>Selecciona un personaje para ver su skin estándar y catálogo de atuendos:</span>
+                    <span className="text-yellow-400 text-[10px] font-pixel-heading">
+                      ★ Todos tienen skin Estándar gratis
+                    </span>
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-2.5">
                     {PLAYER_CLASSES.map((cls) => {
                       const classSkins = skins.filter((s) => s.classId === cls.id);
-                      const hasEquipped = classSkins.some((s) => s.id === selectedSkinId);
+                      const equippedClassSkin = classSkins.find((s) => s.id === activeSkin.id);
+                      const isCurrentClass = selectedClassId === cls.id;
                       const unlockedCount = classSkins.filter((s) => s.unlocked).length;
 
                       return (
@@ -155,8 +207,8 @@ export const ShopModal: React.FC<ShopModalProps> = ({
                           }}
                           className={`pixel-box-dark p-3 cursor-pointer flex flex-col justify-between transition-all hover:scale-[1.02] border-2 group relative overflow-hidden`}
                           style={{
-                            borderColor: hasEquipped ? cls.color : '#3f3f46',
-                            boxShadow: hasEquipped ? `0 0 14px ${cls.color}44` : undefined,
+                            borderColor: isCurrentClass ? cls.color : '#3f3f46',
+                            boxShadow: isCurrentClass ? `0 0 14px ${cls.color}44` : undefined,
                           }}
                         >
                           {/* Background Glow */}
@@ -186,9 +238,9 @@ export const ShopModal: React.FC<ShopModalProps> = ({
                             <span className="text-zinc-400">
                               {unlockedCount}/{classSkins.length} Skins
                             </span>
-                            {hasEquipped ? (
+                            {isCurrentClass && equippedClassSkin ? (
                               <span className="text-sky-400 font-pixel-heading text-[9px] font-bold">
-                                ✓ EN USO
+                                ✓ EN USO ({equippedClassSkin.name})
                               </span>
                             ) : (
                               <span className="text-yellow-400 font-pixel-heading text-[9px] group-hover:translate-x-0.5 transition-transform">
@@ -226,9 +278,15 @@ export const ShopModal: React.FC<ShopModalProps> = ({
                         <span className="text-zinc-400">
                           {skins.filter((s) => !s.classId).length} Skins
                         </span>
-                        <span className="text-yellow-400 font-pixel-heading text-[9px] group-hover:translate-x-0.5 transition-transform">
-                          VER SKINS ➔
-                        </span>
+                        {!activeSkin.classId ? (
+                          <span className="text-yellow-300 font-pixel-heading text-[9px] font-bold">
+                            ✓ EN USO ({activeSkin.name})
+                          </span>
+                        ) : (
+                          <span className="text-yellow-400 font-pixel-heading text-[9px] group-hover:translate-x-0.5 transition-transform">
+                            VER SKINS ➔
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -266,8 +324,9 @@ export const ShopModal: React.FC<ShopModalProps> = ({
                   {/* SKINS LIST FOR THIS CHARACTER */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {characterSkins.map((skin) => {
-                      const isEquipped = selectedSkinId === skin.id;
+                      const isEquipped = activeSkin.id === skin.id;
                       const canAfford = totalCoins >= skin.price;
+                      const isStandard = skin.price === 0;
 
                       const getIcon = () => {
                         if (selectedClass) return selectedClass.icon;
@@ -305,11 +364,15 @@ export const ShopModal: React.FC<ShopModalProps> = ({
                                 <span className="font-pixel-heading text-xs text-white">
                                   {skin.name}
                                 </span>
-                                {skin.hatType !== 'none' && (
+                                {isStandard ? (
+                                  <span className="text-[8px] font-pixel-heading px-1.5 py-0.5 bg-emerald-950 text-emerald-300 border border-emerald-600">
+                                    ESTÁNDAR
+                                  </span>
+                                ) : skin.hatType !== 'none' ? (
                                   <span className="text-[8px] font-pixel-body px-1 py-0.5 bg-zinc-800 text-zinc-300 border border-zinc-700">
                                     3D: {skin.hatType.toUpperCase()}
                                   </span>
-                                )}
+                                ) : null}
                               </div>
                               <div className="font-pixel-body text-[10px] text-zinc-400 mt-1 leading-tight">
                                 {skin.description}
@@ -325,21 +388,37 @@ export const ShopModal: React.FC<ShopModalProps> = ({
                             </div>
                           </div>
 
-                          <div className="mt-2 pt-2 border-t border-zinc-800 flex items-center justify-between">
+                          <div className="mt-2 pt-2 border-t border-zinc-800 flex items-center justify-between gap-2">
                             {skin.unlocked ? (
                               isEquipped ? (
-                                <span className="font-pixel-heading text-xs text-sky-400 flex items-center gap-1 font-bold">
-                                  <span>✓</span> EQUIPADO
-                                </span>
+                                <div className="flex items-center justify-between w-full">
+                                  <span className="font-pixel-heading text-xs text-sky-400 flex items-center gap-1 font-bold">
+                                    <span>✓</span> {isStandard ? 'ESTÁNDAR EN USO' : 'EQUIPADO'}
+                                  </span>
+                                  {!isStandard && onUnequipSkin && (
+                                    <button
+                                      onClick={() => {
+                                        sound.playCoin();
+                                        onUnequipSkin(skin.id);
+                                      }}
+                                      className="pixel-btn pixel-box-red px-2.5 py-1 text-[10px] font-pixel-heading text-white hover:brightness-110"
+                                      title="Desequipar y volver a la skin estándar"
+                                    >
+                                      DESEQUIPAR
+                                    </button>
+                                  )}
+                                </div>
                               ) : (
                                 <button
                                   onClick={() => {
                                     sound.playCoin();
                                     onEquipSkin(skin.id);
                                   }}
-                                  className="pixel-btn pixel-box-blue px-3 py-1 text-xs font-pixel-heading text-white hover:brightness-110"
+                                  className={`pixel-btn px-3 py-1 text-xs font-pixel-heading text-white hover:brightness-110 ${
+                                    isStandard ? 'pixel-box-green bg-emerald-600' : 'pixel-box-blue'
+                                  }`}
                                 >
-                                  EQUIPAR
+                                  {isStandard ? 'USAR ESTÁNDAR' : 'EQUIPAR'}
                                 </button>
                               )
                             ) : (
@@ -377,6 +456,7 @@ export const ShopModal: React.FC<ShopModalProps> = ({
               {buttonSkins.map((btn) => {
                 const isEquipped = selectedButtonSkinId === btn.id;
                 const canAfford = totalCoins >= btn.price;
+                const isDefaultBtn = btn.id === 'button_classic_red';
 
                 return (
                   <div
@@ -418,9 +498,22 @@ export const ShopModal: React.FC<ShopModalProps> = ({
                     <div className="mt-2 pt-2 border-t border-zinc-800 flex items-center justify-between">
                       {btn.unlocked ? (
                         isEquipped ? (
-                          <span className="font-pixel-heading text-xs text-red-400 flex items-center gap-1">
-                            <span>✓</span> ACTIVO EN ARENA
-                          </span>
+                          <div className="flex items-center justify-between w-full">
+                            <span className="font-pixel-heading text-xs text-red-400 flex items-center gap-1">
+                              <span>✓</span> ACTIVO EN ARENA
+                            </span>
+                            {!isDefaultBtn && onUnequipButtonSkin && (
+                              <button
+                                onClick={() => {
+                                  sound.playCoin();
+                                  onUnequipButtonSkin(btn.id);
+                                }}
+                                className="pixel-btn pixel-box-dark px-2.5 py-1 text-[10px] font-pixel-heading text-zinc-300 hover:text-white"
+                              >
+                                RESTABLECER
+                              </button>
+                            )}
+                          </div>
                         ) : (
                           <button
                             onClick={() => {
@@ -462,6 +555,7 @@ export const ShopModal: React.FC<ShopModalProps> = ({
               {banners.map((banner) => {
                 const isEquipped = selectedBannerId === banner.id;
                 const canAfford = totalCoins >= banner.price;
+                const isDefaultBanner = banner.id === 'banner_roba_monedas';
 
                 return (
                   <div
@@ -510,9 +604,22 @@ export const ShopModal: React.FC<ShopModalProps> = ({
                     <div className="mt-2 pt-2 border-t border-zinc-800 flex items-center justify-between">
                       {banner.unlocked ? (
                         isEquipped ? (
-                          <span className="font-pixel-heading text-xs text-amber-400 flex items-center gap-1">
-                            <span>✓</span> EQUIPADO
-                          </span>
+                          <div className="flex items-center justify-between w-full">
+                            <span className="font-pixel-heading text-xs text-amber-400 flex items-center gap-1">
+                              <span>✓</span> EQUIPADO
+                            </span>
+                            {!isDefaultBanner && onUnequipBanner && (
+                              <button
+                                onClick={() => {
+                                  sound.playCoin();
+                                  onUnequipBanner(banner.id);
+                                }}
+                                className="pixel-btn pixel-box-dark px-2.5 py-1 text-[10px] font-pixel-heading text-zinc-300 hover:text-white"
+                              >
+                                RESTABLECER
+                              </button>
+                            )}
+                          </div>
                         ) : (
                           <button
                             onClick={() => {
@@ -552,3 +659,4 @@ export const ShopModal: React.FC<ShopModalProps> = ({
     </div>
   );
 };
+

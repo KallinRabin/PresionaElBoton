@@ -203,6 +203,8 @@ export interface MatchResult {
   }>;
 }
 
+export type ControlMode = 'auto' | 'mobile' | 'pc';
+
 export interface GameSettings {
   soundEnabled: boolean;
   musicEnabled: boolean;
@@ -210,6 +212,7 @@ export interface GameSettings {
   particlesEnabled: boolean;
   cameraSensitivity: number;
   pixelResolutionScale: number; // 1 = standard, 0.65 = ultra retro
+  controlMode?: ControlMode;
 }
 
 export type ArenaId = 'arcade_core' | 'magma_volcano' | 'cyber_space' | 'void_citadel';

@@ -87,6 +87,10 @@ export class GameEngine3D {
   // Input State
   private keysPressed: { [key: string]: boolean } = {};
   private joystickVector: { x: number; y: number } = { x: 0, y: 0 };
+  public isMobileDevice: boolean = false;
+  private cameraTouchId: number | null = null;
+  private lastTouchX: number = 0;
+  private lastTouchY: number = 0;
 
   // Callbacks
   public onStatsUpdate: ((playerStats: PlayerStats, allStats: PlayerStats[]) => void) | null = null;
@@ -202,6 +206,10 @@ export class GameEngine3D {
     this.canvas.addEventListener('mousedown', this.handleMouseDown);
     window.addEventListener('mouseup', this.handleMouseUp);
     window.addEventListener('mousemove', this.handleMouseMove);
+    this.canvas.addEventListener('touchstart', this.handleTouchStart, { passive: false });
+    window.addEventListener('touchmove', this.handleTouchMove, { passive: false });
+    window.addEventListener('touchend', this.handleTouchEnd, { passive: true });
+    window.addEventListener('touchcancel', this.handleTouchEnd, { passive: true });
     this.canvas.addEventListener('contextmenu', this.handleContextMenu);
     window.addEventListener('contextmenu', this.handleContextMenu);
     document.addEventListener('pointerlockchange', this.handlePointerLockChange);
@@ -235,8 +243,8 @@ export class GameEngine3D {
     this.keysPressed[e.key.toLowerCase()] = true;
     if (e.code) this.keysPressed[e.code.toLowerCase()] = true;
 
-    // During active match, any user interaction keeps pointer lock locked
-    if (this.isMatchRunning && !this.isPaused && document.pointerLockElement !== this.canvas) {
+    // During active match on PC, any user interaction keeps pointer lock locked
+    if (!this.isMobileDevice && this.isMatchRunning && !this.isPaused && document.pointerLockElement !== this.canvas) {
       this.requestPointerLock();
     }
 
@@ -259,6 +267,7 @@ export class GameEngine3D {
   };
 
   public requestPointerLock() {
+    if (this.isMobileDevice) return;
     try {
       if (this.canvas && document.pointerLockElement !== this.canvas) {
         this.canvas.focus?.();
@@ -299,8 +308,8 @@ export class GameEngine3D {
   };
 
   private handleMouseDown = (e: MouseEvent) => {
-    // Request pointer lock when clicking inside active match
-    if (this.isMatchRunning && !this.isPaused && document.pointerLockElement !== this.canvas) {
+    // Request pointer lock when clicking inside active match on PC
+    if (!this.isMobileDevice && this.isMatchRunning && !this.isPaused && document.pointerLockElement !== this.canvas) {
       this.requestPointerLock();
     }
 
@@ -331,8 +340,10 @@ export class GameEngine3D {
       this.cameraYaw -= e.movementX * sensitivity;
       this.cameraPitch = Math.max(-0.25, Math.min(0.65, this.cameraPitch + e.movementY * sensitivity));
     } else {
-      // If not yet locked during active gameplay, auto-lock
-      this.requestPointerLock();
+      // If not yet locked during active gameplay on PC, auto-lock
+      if (!this.isMobileDevice) {
+        this.requestPointerLock();
+      }
 
       if (this.isMouseDownForDrag) {
         // Fallback Mouse Drag Orbit
@@ -343,6 +354,57 @@ export class GameEngine3D {
         const sensitivity = 0.005 * this.cameraSensitivityMultiplier;
         this.cameraYaw -= dx * sensitivity;
         this.cameraPitch = Math.max(-0.25, Math.min(0.65, this.cameraPitch + dy * sensitivity));
+      }
+    }
+  };
+
+  // --- MOBILE TOUCH CONTROLS (Camera Rotation) ---
+  private handleTouchStart = (e: TouchEvent) => {
+    if (!this.isMatchRunning || this.isPaused) return;
+
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      const touch = e.changedTouches[i];
+      // Only track touch for camera if we don't already have an active camera touch
+      if (this.cameraTouchId === null) {
+        this.cameraTouchId = touch.identifier;
+        this.lastTouchX = touch.clientX;
+        this.lastTouchY = touch.clientY;
+        break;
+      }
+    }
+  };
+
+  private handleTouchMove = (e: TouchEvent) => {
+    if (!this.isMatchRunning || this.isPaused || this.cameraTouchId === null) return;
+
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      const touch = e.changedTouches[i];
+      if (touch.identifier === this.cameraTouchId) {
+        const dx = touch.clientX - this.lastTouchX;
+        const dy = touch.clientY - this.lastTouchY;
+        this.lastTouchX = touch.clientX;
+        this.lastTouchY = touch.clientY;
+
+        const sensitivity = 0.0055 * this.cameraSensitivityMultiplier;
+        this.cameraYaw -= dx * sensitivity;
+        this.cameraPitch = Math.max(-0.25, Math.min(0.65, this.cameraPitch + dy * sensitivity));
+
+        if (e.cancelable) {
+          e.preventDefault();
+        }
+        break;
+      }
+    }
+  };
+
+  private handleTouchEnd = (e: TouchEvent) => {
+    if (this.cameraTouchId === null) return;
+
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      const touch = e.changedTouches[i];
+      if (touch.identifier === this.cameraTouchId) {
+        this.cameraTouchId = null;
+        break;
       }
     }
   };
@@ -691,6 +753,22 @@ export class GameEngine3D {
       this.particleSystem.createSparkles(this.player.group.position, '#38bdf8');
       sound.playJump();
     }
+  }
+
+  public playerPunch() {
+    this.triggerPlayerPunch();
+  }
+
+  public playerAbility() {
+    this.triggerPlayerAbility();
+  }
+
+  public playerJump() {
+    this.triggerPlayerJump();
+  }
+
+  public setIsMobile(isMobile: boolean) {
+    this.isMobileDevice = isMobile;
   }
 
   public setJoystickMove(vec: { x: number; y: number }) {
@@ -1773,6 +1851,10 @@ export class GameEngine3D {
     window.removeEventListener('mouseup', this.handleMouseUp);
     window.removeEventListener('mousemove', this.handleMouseMove);
     this.canvas.removeEventListener('mousedown', this.handleMouseDown);
+    this.canvas.removeEventListener('touchstart', this.handleTouchStart);
+    window.removeEventListener('touchmove', this.handleTouchMove);
+    window.removeEventListener('touchend', this.handleTouchEnd);
+    window.removeEventListener('touchcancel', this.handleTouchEnd);
     this.canvas.removeEventListener('contextmenu', this.handleContextMenu);
     window.removeEventListener('contextmenu', this.handleContextMenu);
     document.removeEventListener('pointerlockchange', this.handlePointerLockChange);

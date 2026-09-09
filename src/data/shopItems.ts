@@ -1,20 +1,35 @@
-import { CharacterSkin, ButtonSkin, TrailEffect, KillBanner } from '../types';
+import { CharacterSkin, ButtonSkin, TrailEffect, KillBanner, ClassId } from '../types';
 
 export const INITIAL_SKINS: CharacterSkin[] = [
   // 1. BOXEADOR TITÁN (BRAWLER)
   {
-    id: 'pixel_knight',
-    name: 'Caballero 8-Bit',
+    id: 'brawler_default',
+    name: 'Boxeador Estándar',
     price: 0,
     unlocked: true,
+    color: '#ef4444',
+    headColor: '#7f1d1d',
+    bodyColor: '#b91c1c',
+    detailColor: '#fca5a5',
+    hatType: 'none',
+    description: 'El atuendo original del coloso del guante de combate.',
+    speedMultiplier: 1.0,
+    dashPowerMultiplier: 1.0,
+    classId: 'brawler',
+  },
+  {
+    id: 'pixel_knight',
+    name: 'Caballero 8-Bit',
+    price: 220,
+    unlocked: false,
     color: '#ef4444',
     headColor: '#fcd34d',
     bodyColor: '#b91c1c',
     detailColor: '#fca5a5',
     hatType: 'helmet',
     description: 'El coloso del guante con yelmo de acero pesado.',
-    speedMultiplier: 1.0,
-    dashPowerMultiplier: 1.0,
+    speedMultiplier: 1.05,
+    dashPowerMultiplier: 1.15,
     classId: 'brawler',
   },
   {
@@ -34,6 +49,21 @@ export const INITIAL_SKINS: CharacterSkin[] = [
   },
 
   // 2. PÍCARO SOMBRÍO (SHADOW THIEF)
+  {
+    id: 'shadow_default',
+    name: 'Pícaro Estándar',
+    price: 0,
+    unlocked: true,
+    color: '#8b5cf6',
+    headColor: '#0f172a',
+    bodyColor: '#5b21b6',
+    detailColor: '#c084fc',
+    hatType: 'none',
+    description: 'El atuendo original del ladrón de las sombras.',
+    speedMultiplier: 1.0,
+    dashPowerMultiplier: 1.0,
+    classId: 'shadow_thief',
+  },
   {
     id: 'shadow_assassin',
     name: 'Sombra del Vacío',
@@ -67,6 +97,21 @@ export const INITIAL_SKINS: CharacterSkin[] = [
 
   // 3. GUARDIÁN DE HIERRO (IRON GUARDIAN)
   {
+    id: 'guardian_default',
+    name: 'Guardián Estándar',
+    price: 0,
+    unlocked: true,
+    color: '#0284c7',
+    headColor: '#0f172a',
+    bodyColor: '#0369a1',
+    detailColor: '#7dd3fc',
+    hatType: 'none',
+    description: 'La armadura estándar del bastión blindado inquebrantable.',
+    speedMultiplier: 1.0,
+    dashPowerMultiplier: 1.0,
+    classId: 'iron_guardian',
+  },
+  {
     id: 'cyber_bot',
     name: 'Cyber Droide 3000',
     price: 300,
@@ -98,6 +143,21 @@ export const INITIAL_SKINS: CharacterSkin[] = [
   },
 
   // 4. MAGO GRAVITATORIO (GRAVITY MAGE)
+  {
+    id: 'mage_default',
+    name: 'Mago Estándar',
+    price: 0,
+    unlocked: true,
+    color: '#059669',
+    headColor: '#064e3b',
+    bodyColor: '#047857',
+    detailColor: '#6ee7b7',
+    hatType: 'none',
+    description: 'La túnica arcanista tradicional de control gravitacional.',
+    speedMultiplier: 1.0,
+    dashPowerMultiplier: 1.0,
+    classId: 'gravity_mage',
+  },
   {
     id: 'mage_cosmic',
     name: 'Mago Cósmico',
@@ -131,6 +191,21 @@ export const INITIAL_SKINS: CharacterSkin[] = [
 
   // 5. ARTIFICIERO TRAMPERO (TRAPSTER)
   {
+    id: 'trapster_default',
+    name: 'Artificiero Estándar',
+    price: 0,
+    unlocked: true,
+    color: '#d97706',
+    headColor: '#78350f',
+    bodyColor: '#b45309',
+    detailColor: '#fde68a',
+    hatType: 'none',
+    description: 'El uniforme táctico clásico del experto en trampas y dinamita.',
+    speedMultiplier: 1.0,
+    dashPowerMultiplier: 1.0,
+    classId: 'trapster',
+  },
+  {
     id: 'dino_pixel',
     name: 'Rex Retro',
     price: 300,
@@ -162,6 +237,21 @@ export const INITIAL_SKINS: CharacterSkin[] = [
   },
 
   // 6. PIRO-MAGO ÍGNEO (PYRO FIEND)
+  {
+    id: 'pyro_default',
+    name: 'Piro-Mago Estándar',
+    price: 0,
+    unlocked: true,
+    color: '#ea580c',
+    headColor: '#431407',
+    bodyColor: '#9a3412',
+    detailColor: '#fdba74',
+    hatType: 'none',
+    description: 'El atuendo tradicional de los maestros hechiceros de fuego.',
+    speedMultiplier: 1.0,
+    dashPowerMultiplier: 1.0,
+    classId: 'pyro_fiend',
+  },
   {
     id: 'pyro_inferno',
     name: 'Señor del Infierno',
@@ -195,6 +285,21 @@ export const INITIAL_SKINS: CharacterSkin[] = [
 
   // 7. VALQUIRIA GLACIAL (FROST VALKYRIE)
   {
+    id: 'valkyrie_default',
+    name: 'Valquiria Estándar',
+    price: 0,
+    unlocked: true,
+    color: '#06b6d4',
+    headColor: '#164e63',
+    bodyColor: '#0891b2',
+    detailColor: '#a5f3fc',
+    hatType: 'none',
+    description: 'La cota de malla y armadura gélida tradicional.',
+    speedMultiplier: 1.0,
+    dashPowerMultiplier: 1.0,
+    classId: 'frost_valkyrie',
+  },
+  {
     id: 'valkyrie_frost',
     name: 'Doncella Polar',
     price: 320,
@@ -226,6 +331,21 @@ export const INITIAL_SKINS: CharacterSkin[] = [
   },
 
   // 8. NINJA CYBER-VOLT (CYBER NINJA)
+  {
+    id: 'ninja_default',
+    name: 'Ninja Estándar',
+    price: 0,
+    unlocked: true,
+    color: '#eab308',
+    headColor: '#18181b',
+    bodyColor: '#ca8a04',
+    detailColor: '#fef08a',
+    hatType: 'none',
+    description: 'El traje shinobi clásico de alta velocidad electromagnética.',
+    speedMultiplier: 1.0,
+    dashPowerMultiplier: 1.0,
+    classId: 'cyber_ninja',
+  },
   {
     id: 'ninja_pixel',
     name: 'Ninja Cyber-Volt',
@@ -287,6 +407,36 @@ export const INITIAL_SKINS: CharacterSkin[] = [
     dashPowerMultiplier: 1.35,
   },
 ];
+
+export function getDefaultSkinForClass(classId: ClassId): CharacterSkin {
+  return (
+    INITIAL_SKINS.find((s) => s.classId === classId && s.price === 0) ||
+    INITIAL_SKINS.find((s) => s.classId === classId) ||
+    INITIAL_SKINS[0]
+  );
+}
+
+export function resolveEquippedSkin(
+  selectedSkinId: string,
+  classId: ClassId,
+  allSkins: CharacterSkin[]
+): CharacterSkin {
+  const skin = allSkins.find((s) => s.id === selectedSkinId);
+  // Universal skin (no classId) can be equipped on any class
+  if (skin && !skin.classId) {
+    return skin;
+  }
+  // Class-specific skin must match the current class
+  if (skin && skin.classId === classId) {
+    return skin;
+  }
+  // Fallback to the default standard skin for the active class
+  return (
+    allSkins.find((s) => s.classId === classId && s.price === 0) ||
+    allSkins.find((s) => s.classId === classId) ||
+    allSkins[0]
+  );
+}
 
 export const INITIAL_BUTTON_SKINS: ButtonSkin[] = [
   {

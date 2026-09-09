@@ -2,6 +2,7 @@ import React from 'react';
 import { RoomInfo, RoomPlayer } from '../types';
 import { PLAYER_CLASSES } from '../data/classes';
 import { ARENAS } from '../data/arenas';
+import { INITIAL_SKINS } from '../data/shopItems';
 import { sound } from '../game/audio';
 import { networkManager } from '../game/network';
 
@@ -98,6 +99,7 @@ export const PreMatchLobbyModal: React.FC<PreMatchLobbyModalProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {room.players.map((p) => {
               const classDef = PLAYER_CLASSES.find((c) => c.id === p.classId) || PLAYER_CLASSES[0];
+              const skinDef = INITIAL_SKINS.find((s) => s.id === p.skinId);
               const isMe = p.id === localPlayerId;
 
               return (
@@ -127,7 +129,7 @@ export const PreMatchLobbyModal: React.FC<PreMatchLobbyModalProps> = ({
                         {isMe && <span className="text-[8px] text-yellow-300 font-normal">(TÚ)</span>}
                       </div>
                       <div className="font-pixel-body text-[8px] text-zinc-400 truncate">
-                        {classDef.name} {p.team ? `• Equipo ${p.team === 'red' ? 'Rojo' : 'Azul'}` : ''}
+                        {classDef.name} {skinDef ? `• ${skinDef.name}` : ''} {p.team ? `• ${p.team === 'red' ? 'Rojo' : 'Azul'}` : ''}
                       </div>
                     </div>
                   </div>

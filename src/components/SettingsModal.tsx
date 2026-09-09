@@ -1,6 +1,7 @@
 import React from 'react';
 import { GameSettings } from '../types';
 import { sound } from '../game/audio';
+import { detectIsMobile } from '../utils/device';
 
 interface SettingsModalProps {
   settings: GameSettings;
@@ -13,6 +14,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onUpdateSettings,
   onClose,
 }) => {
+  const isDetectedMobile = detectIsMobile();
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-sm select-none">
       <div
@@ -151,6 +153,42 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   {sens === 0.7 ? 'LENTA' : sens === 1.0 ? 'NORMAL' : 'RÁPIDA'}
                 </button>
               ))}
+            </div>
+          </div>
+
+          {/* Controls Mode Selection */}
+          <div className="p-3 pixel-box-dark bg-zinc-900">
+            <div className="flex items-center justify-between mb-1.5">
+              <div className="font-pixel-heading text-xs text-white flex items-center gap-1.5">
+                <span>🎮</span> CONTROLES
+              </div>
+              <div className="font-pixel-body text-[10px] text-zinc-300">
+                Detectado: <span className="font-bold text-yellow-300">{isDetectedMobile ? 'Móvil 📱' : 'PC 💻'}</span>
+              </div>
+            </div>
+            <div className="font-pixel-body text-[9px] text-zinc-400 mb-2 leading-tight">
+              Modo automático detecta si estás en celular o PC. Puedes forzar el modo si lo prefieres.
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {(['auto', 'mobile', 'pc'] as const).map((mode) => {
+                const isSelected = (settings.controlMode || 'auto') === mode;
+                return (
+                  <button
+                    key={mode}
+                    onClick={() => {
+                      sound.playCoin();
+                      onUpdateSettings({ controlMode: mode });
+                    }}
+                    className={`pixel-btn py-1 text-[9px] font-pixel-heading transition-all ${
+                      isSelected
+                        ? 'pixel-box-purple bg-purple-600 text-white'
+                        : 'pixel-box-dark bg-zinc-800 text-zinc-400 hover:text-zinc-200'
+                    }`}
+                  >
+                    {mode === 'auto' ? 'AUTO' : mode === 'mobile' ? 'MÓVIL' : 'PC'}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>

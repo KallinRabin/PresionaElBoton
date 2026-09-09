@@ -28,6 +28,8 @@ import {
   INITIAL_BUTTON_SKINS,
   INITIAL_TRAILS,
   INITIAL_BANNERS,
+  resolveEquippedSkin,
+  getDefaultSkinForClass,
 } from './data/shopItems';
 import { generateDailyMissions } from './data/missions';
 import { PixelHUD } from './components/PixelHUD';
@@ -46,6 +48,7 @@ import { PreMatchLobbyModal } from './components/PreMatchLobbyModal';
 import { sound } from './game/audio';
 import { networkManager } from './game/network';
 import { RoomInfo } from './types';
+import { resolveIsMobile } from './utils/device';
 
 const STORAGE_KEY_COINS = 'roba_boton_coins';
 const STORAGE_KEY_SKINS = 'roba_boton_skins';
@@ -143,6 +146,7 @@ export default function App() {
           particlesEnabled: true,
           cameraSensitivity: 1.0,
           pixelResolutionScale: 1.0,
+          controlMode: 'auto',
         };
   });
 
@@ -199,8 +203,12 @@ export default function App() {
   const [hasRequestedRematch, setHasRequestedRematch] = useState<boolean>(false);
   const [rematchNotice, setRematchNotice] = useState<string | null>(null);
 
-  // Check touch device support
-  const isTouchDevice = typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+  // Check touch / mobile device support
+  const isTouchDevice = resolveIsMobile(settings.controlMode);
+
+  useEffect(() => {
+    engineRef.current?.setIsMobile(isTouchDevice);
+  }, [isTouchDevice]);
 
   // Sync persistence to localStorage
   useEffect(() => {
@@ -333,6 +341,7 @@ export default function App() {
 
     const engine = new GameEngine3D(canvasRef.current);
     engineRef.current = engine;
+    engine.setIsMobile(isTouchDevice);
     engine.setParticleEffectsEnabled(settings.particlesEnabled !== false);
     engine.setCameraSensitivity(settings.cameraSensitivity || 1.0);
 
@@ -429,7 +438,7 @@ export default function App() {
     engineRef.current.setParticleEffectsEnabled(settings.particlesEnabled !== false);
     engineRef.current.setCameraSensitivity(settings.cameraSensitivity || 1.0);
 
-    const equippedSkin = skins.find((s) => s.id === selectedSkinId) || skins[0];
+    const equippedSkin = resolveEquippedSkin(selectedSkinId, selectedClassId, skins);
     const equippedButton = buttonSkins.find((b) => b.id === selectedButtonSkinId) || buttonSkins[0];
     const equippedBanner = banners.find((b) => b.id === selectedBannerId) || banners[0];
     const equippedTrail = trailEffects.find((t) => t.id === selectedTrailId) || trailEffects[0];
@@ -484,7 +493,7 @@ export default function App() {
       engineRef.current.setParticleEffectsEnabled(settings.particlesEnabled !== false);
       engineRef.current.setCameraSensitivity(settings.cameraSensitivity || 1.0);
 
-      const equippedSkin = skins.find((s) => s.id === selectedSkinId) || skins[0];
+      const equippedSkin = resolveEquippedSkin(selectedSkinId, selectedClassId, skins);
       const equippedButton = buttonSkins.find((b) => b.id === selectedButtonSkinId) || buttonSkins[0];
       const equippedBanner = banners.find((b) => b.id === selectedBannerId) || banners[0];
       const equippedTrail = trailEffects.find((t) => t.id === selectedTrailId) || trailEffects[0];
@@ -658,6 +667,11 @@ export default function App() {
     setSelectedSkinId(skinId);
   };
 
+  const handleUnequipSkin = () => {
+    const defaultSkin = getDefaultSkinForClass(selectedClassId);
+    setSelectedSkinId(defaultSkin.id);
+  };
+
   const handleBuyButtonSkin = (btnId: string) => {
     const target = buttonSkins.find((b) => b.id === btnId);
     if (!target || target.unlocked || totalCoins < target.price) return;
@@ -670,6 +684,10 @@ export default function App() {
 
   const handleEquipButtonSkin = (btnId: string) => {
     setSelectedButtonSkinId(btnId);
+  };
+
+  const handleUnequipButtonSkin = () => {
+    setSelectedButtonSkinId('button_classic_red');
   };
 
   const handleBuyBanner = (bannerId: string) => {
@@ -686,6 +704,10 @@ export default function App() {
     setSelectedBannerId(bannerId);
   };
 
+  const handleUnequipBanner = () => {
+    setSelectedBannerId('banner_roba_monedas');
+  };
+
   // Claim Daily Mission Reward
   const handleClaimReward = (missionId: string) => {
     setMissions((prev) =>
@@ -699,7 +721,7 @@ export default function App() {
     );
   };
 
-  const currentSkin = skins.find((s) => s.id === selectedSkinId) || skins[0];
+  const currentSkin = resolveEquippedSkin(selectedSkinId, selectedClassId, skins);
   const currentButtonSkin = buttonSkins.find((b) => b.id === selectedButtonSkinId) || buttonSkins[0];
   const unclaimedMissionsCount = missions.filter((m) => m.completed && !m.claimed).length;
 
@@ -714,11 +736,11 @@ export default function App() {
       <canvas
         ref={canvasRef}
         onClick={() => {
-          if (gameState === 'playing') {
+          if (gameState === 'playing' && !isTouchDevice) {
             engineRef.current?.requestPointerLock();
           }
         }}
-        className="w-full h-full block cursor-crosshair focus:outline-none"
+        className="w-full h-full block cursor-crosshair focus:outline-none touch-none"
       />
 
       {/* CRT SCANLINES & RETRO VIGNETTE OVERLAY */}
@@ -853,12 +875,16 @@ export default function App() {
           selectedSkinId={selectedSkinId}
           selectedButtonSkinId={selectedButtonSkinId}
           selectedBannerId={selectedBannerId}
+          selectedClassId={selectedClassId}
           onBuySkin={handleBuySkin}
           onEquipSkin={handleEquipSkin}
+          onUnequipSkin={handleUnequipSkin}
           onBuyButtonSkin={handleBuyButtonSkin}
           onEquipButtonSkin={handleEquipButtonSkin}
+          onUnequipButtonSkin={handleUnequipButtonSkin}
           onBuyBanner={handleBuyBanner}
           onEquipBanner={handleEquipBanner}
+          onUnequipBanner={handleUnequipBanner}
           onClose={() => setIsShopOpen(false)}
         />
       )}

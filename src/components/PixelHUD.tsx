@@ -63,6 +63,12 @@ export const PixelHUD: React.FC<PixelHUDProps> = ({
     ? BATTLE_ITEMS.find((i) => i.type === playerStats.activeItem)
     : null;
 
+  const handleTouchAction = (action: () => void) => (e: React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    action();
+  };
+
   return (
     <div className="absolute inset-0 pointer-events-none z-10 flex flex-col justify-between p-2.5 sm:p-4 select-none">
       {/* 1. TOP BAR: Coins, Timer, Event, Rank & Pause */}
@@ -354,16 +360,17 @@ export const PixelHUD: React.FC<PixelHUDProps> = ({
 
         {/* RIGHT: Action & Class Ability Buttons */}
         <div className="pointer-events-auto flex items-end gap-2 sm:gap-3">
-          {/* 1. UNIQUE CLASS SIGNATURE ABILITY BUTTON [TECLA E] */}
+          {/* 1. UNIQUE CLASS SIGNATURE ABILITY BUTTON */}
           <div className="flex flex-col items-center gap-0.5">
             <button
               id="hud-btn-class-ability"
               tabIndex={-1}
               onFocus={(e) => e.currentTarget.blur()}
+              onTouchStart={handleTouchAction(onAbility)}
               onClick={onAbility}
               disabled={playerStats.abilityCooldown > 0 || playerStats.isStunned}
-              className={`w-14 h-14 sm:w-16 sm:h-16 pixel-btn pixel-box-purple flex flex-col items-center justify-center relative overflow-hidden ${
-                playerStats.abilityCooldown > 0 || playerStats.isStunned ? 'opacity-60 grayscale' : 'hover:scale-105'
+              className={`w-14 h-14 sm:w-16 sm:h-16 pixel-btn pixel-box-purple flex flex-col items-center justify-center relative overflow-hidden select-none ${
+                playerStats.abilityCooldown > 0 || playerStats.isStunned ? 'opacity-60 grayscale' : 'hover:scale-105 active:scale-95'
               }`}
             >
               <span className="text-xl sm:text-2xl">{playerClass.ability.icon}</span>
@@ -378,37 +385,43 @@ export const PixelHUD: React.FC<PixelHUDProps> = ({
                 </div>
               )}
             </button>
-            <span className="text-[8px] sm:text-[9px] font-pixel-body text-purple-300 font-bold">[TECLA E]</span>
+            {!isTouchDevice && (
+              <span className="text-[8px] sm:text-[9px] font-pixel-body text-purple-300 font-bold">[TECLA E]</span>
+            )}
           </div>
 
-          {/* 2. JUMP BUTTON [ESPACIO] */}
+          {/* 2. JUMP BUTTON */}
           <div className="flex flex-col items-center gap-0.5">
             <button
               id="hud-btn-jump"
               tabIndex={-1}
               onFocus={(e) => e.currentTarget.blur()}
+              onTouchStart={handleTouchAction(onJump)}
               onClick={onJump}
               disabled={playerStats.isStunned}
-              className="w-13 h-13 sm:w-15 sm:h-15 pixel-btn pixel-box-green p-2 flex flex-col items-center justify-center hover:scale-105"
+              className="w-13 h-13 sm:w-15 sm:h-15 pixel-btn pixel-box-green p-2 flex flex-col items-center justify-center hover:scale-105 active:scale-95 select-none"
             >
               <span className="text-lg sm:text-xl">🦘</span>
               <span className="font-pixel-heading text-[8px] text-white font-bold">SALTAR</span>
             </button>
-            <span className="text-[8px] sm:text-[9px] font-pixel-body text-emerald-300 font-bold">[ESPACIO]</span>
+            {!isTouchDevice && (
+              <span className="text-[8px] sm:text-[9px] font-pixel-body text-emerald-300 font-bold">[ESPACIO]</span>
+            )}
           </div>
 
-          {/* 3. PRIMARY STEAL GLOVE PUNCH BUTTON [CLICK IZQ / F] with custom button skin */}
+          {/* 3. PRIMARY STEAL GLOVE PUNCH BUTTON with custom button skin */}
           <div className="flex flex-col items-center gap-0.5">
             <button
               id="hud-btn-punch"
               tabIndex={-1}
               onFocus={(e) => e.currentTarget.blur()}
+              onTouchStart={handleTouchAction(onPunch)}
               onClick={onPunch}
               disabled={playerStats.attackCooldown > 0 || playerStats.isStunned}
-              className={`w-16 h-16 sm:w-20 sm:h-20 pixel-btn flex flex-col items-center justify-center relative overflow-hidden transition-all ${
+              className={`w-16 h-16 sm:w-20 sm:h-20 pixel-btn flex flex-col items-center justify-center relative overflow-hidden transition-all select-none ${
                 buttonSkin?.hudGlowClass || 'pixel-box-red'
               } ${
-                playerStats.attackCooldown > 0 || playerStats.isStunned ? 'opacity-60 grayscale' : 'hover:scale-105 animate-pulse'
+                playerStats.attackCooldown > 0 || playerStats.isStunned ? 'opacity-60 grayscale' : 'hover:scale-105 active:scale-95 animate-pulse'
               }`}
             >
               <span className="text-2xl sm:text-3xl">🥊</span>
@@ -422,7 +435,9 @@ export const PixelHUD: React.FC<PixelHUDProps> = ({
                 </div>
               )}
             </button>
-            <span className="text-[8px] sm:text-[9px] font-pixel-body text-red-300 font-bold">[CLICK IZQ / F]</span>
+            {!isTouchDevice && (
+              <span className="text-[8px] sm:text-[9px] font-pixel-body text-red-300 font-bold">[CLICK IZQ / F]</span>
+            )}
           </div>
         </div>
       </div>

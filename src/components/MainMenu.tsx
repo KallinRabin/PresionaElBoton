@@ -28,6 +28,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
   totalCoins,
   playerName,
   onUpdatePlayerName,
+  selectedSkin,
   selectedClassId,
   selectedMode,
   selectedArenaId,
@@ -43,6 +44,18 @@ export const MainMenu: React.FC<MainMenuProps> = ({
   onOpenMultiplayer,
 }) => {
   const currentClass = PLAYER_CLASSES.find((c) => c.id === selectedClassId) || PLAYER_CLASSES[0];
+
+  const getSkinIcon = () => {
+    if (selectedSkin.hatType === 'crown') return '👑';
+    if (selectedSkin.hatType === 'ninja') return '🥷';
+    if (selectedSkin.hatType === 'antenna') return '🤖';
+    if (selectedSkin.hatType === 'horns') return '🦖';
+    if (selectedSkin.hatType === 'hood') return '🔮';
+    if (selectedSkin.hatType === 'pirate') return '🏴‍☠️';
+    return currentClass.icon;
+  };
+
+  const isStandardSkin = selectedSkin.price === 0;
 
   const modes: Array<{ id: GameMode; title: string; desc: string; icon: string; tag: string; isFeatured?: boolean }> = [
     {
@@ -70,7 +83,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
   ];
 
   return (
-    <div className="absolute inset-0 z-20 flex flex-col items-center justify-between p-2.5 sm:p-4 bg-gradient-to-b from-[#090a14]/95 via-[#121324]/95 to-[#090a14]/95 overflow-hidden select-none">
+    <div className="absolute inset-0 z-20 flex flex-col items-center justify-between p-2.5 sm:p-4 bg-gradient-to-b from-[#090a14]/95 via-[#121324]/95 to-[#090a14]/95 overflow-y-auto overflow-x-hidden select-none">
       {/* 1. TOP HEADER BAR */}
       <div className="w-full max-w-4xl flex items-center justify-between gap-2 shrink-0">
         {/* Coin Bank */}
@@ -149,10 +162,10 @@ export const MainMenu: React.FC<MainMenuProps> = ({
           </div>
         </div>
 
-        {/* PROFILE ROW: Name Input + Class Preview */}
-        <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-2.5 my-1 max-w-3xl">
-          {/* Player Name Customizer */}
-          <div className="pixel-box-dark px-3 py-1.5 bg-zinc-900/90 border-2 border-amber-500 flex items-center gap-2">
+        {/* PROFILE ROW: Name Input + Class Preview + Skin Indicator */}
+        <div className="w-full grid grid-cols-1 md:grid-cols-12 gap-2 my-1 max-w-3xl">
+          {/* Player Name Customizer (5 cols on md) */}
+          <div className="md:col-span-5 pixel-box-dark px-3 py-1.5 bg-zinc-900/90 border-2 border-amber-500 flex items-center gap-2">
             <span className="text-lg shrink-0">👤</span>
             <div className="flex-1 min-w-0">
               <label className="block text-[8px] font-pixel-body text-amber-400 uppercase font-bold leading-tight">
@@ -170,33 +183,65 @@ export const MainMenu: React.FC<MainMenuProps> = ({
             </div>
           </div>
 
-          {/* Active Class Pill */}
+          {/* Active Class Pill (4 cols on md) */}
           <div
             id="menu-class-preview"
             onClick={() => {
               sound.playCoin();
               onOpenClassSelect();
             }}
-            className="pixel-btn pixel-box-dark px-3 py-1.5 flex items-center justify-between gap-2 bg-zinc-900/90 border-2 border-sky-400 hover:scale-105 cursor-pointer"
+            className="md:col-span-4 pixel-btn pixel-box-dark px-2.5 py-1.5 flex items-center justify-between gap-1.5 bg-zinc-900/90 border-2 border-sky-400 hover:scale-105 cursor-pointer"
           >
-            <div className="flex items-center gap-2 flex-1 min-w-0">
+            <div className="flex items-center gap-2 min-w-0">
               <div
                 className="w-7 h-7 pixel-box-sm flex items-center justify-center text-sm shrink-0"
                 style={{ backgroundColor: currentClass.color }}
               >
                 {currentClass.icon}
               </div>
-              <div className="text-left flex-1 min-w-0">
+              <div className="text-left min-w-0">
                 <div className="text-[7px] font-pixel-body text-sky-400 font-bold uppercase leading-none">
                   CLASE ELEGIDA
                 </div>
-                <div className="text-[11px] sm:text-xs font-pixel-heading text-white whitespace-nowrap">
+                <div className="text-[10px] sm:text-xs font-pixel-heading text-white truncate">
                   {currentClass.name}
                 </div>
               </div>
             </div>
-            <span className="text-[8px] font-pixel-heading text-sky-300 bg-sky-950 px-2 py-1 border border-sky-600 shrink-0">
+            <span className="text-[8px] font-pixel-heading text-sky-300 bg-sky-950 px-1.5 py-0.5 border border-sky-600 shrink-0">
               CAMBIAR ⮞
+            </span>
+          </div>
+
+          {/* Active Skin Pill (3 cols on md) */}
+          <div
+            id="menu-skin-preview"
+            onClick={() => {
+              sound.playCoin();
+              onOpenShop();
+            }}
+            className={`md:col-span-3 pixel-btn pixel-box-dark px-2.5 py-1.5 flex items-center justify-between gap-1.5 bg-zinc-900/90 border-2 hover:scale-105 cursor-pointer ${
+              !isStandardSkin ? 'border-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.3)]' : 'border-zinc-600'
+            }`}
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <div
+                className="w-7 h-7 pixel-box-sm flex items-center justify-center text-sm shrink-0 relative"
+                style={{ backgroundColor: selectedSkin.color }}
+              >
+                <span>{getSkinIcon()}</span>
+              </div>
+              <div className="text-left min-w-0">
+                <div className="text-[7px] font-pixel-body text-amber-400 font-bold uppercase leading-none">
+                  SKIN EN USO
+                </div>
+                <div className="text-[10px] sm:text-xs font-pixel-heading text-yellow-300 truncate">
+                  {selectedSkin.name}
+                </div>
+              </div>
+            </div>
+            <span className="text-[8px] font-pixel-heading text-amber-300 bg-amber-950 px-1.5 py-0.5 border border-amber-600 shrink-0">
+              ARMARIO ➔
             </span>
           </div>
         </div>

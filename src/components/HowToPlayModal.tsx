@@ -76,12 +76,24 @@ export const HowToPlayModal: React.FC<HowToPlayModalProps> = ({ onClose }) => {
 
           {/* CONTROLS RECAP */}
           <div className="pixel-box-blue p-3 bg-sky-950/80 mt-3">
-            <div className="font-pixel-heading text-xs text-sky-200 mb-1.5">🎮 CONTROLES TÁCTICOS</div>
-            <div className="grid grid-cols-2 gap-1.5 text-[11px] font-pixel-body text-zinc-200">
-              <div>• WASD / Flechas: Desplazamiento</div>
-              <div>• ESPACIO / Click: Guante de Robo</div>
-              <div>• E: Habilidad Única de Clase</div>
-              <div>• W / ESPACIO: Salto & Recuperación</div>
+            <div className="font-pixel-heading text-xs text-sky-200 mb-2">🎮 CONTROLES TÁCTICOS</div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px] sm:text-[11px] font-pixel-body text-zinc-200">
+              <div className="bg-black/50 p-2 border border-sky-800">
+                <div className="font-bold text-sky-300 mb-1 font-pixel-heading text-[9px]">💻 EN COMPUTADORA (PC):</div>
+                <div>• WASD / Flechas: Moverse</div>
+                <div>• Ratón: Mirar / Rotar cámara</div>
+                <div>• Click Izq / F: Guante de Robo</div>
+                <div>• Espacio: Saltar (Doble salto)</div>
+                <div>• Tecla E: Habilidad de Clase</div>
+              </div>
+              <div className="bg-black/50 p-2 border border-yellow-800">
+                <div className="font-bold text-yellow-300 mb-1 font-pixel-heading text-[9px]">📱 EN CELULAR / TABLET:</div>
+                <div>• Joystick (Izquierda): Moverse 360°</div>
+                <div>• Deslizar Pantalla (Derecha): Mirar</div>
+                <div>• Botón 🥊: Guante de Robo</div>
+                <div>• Botón 🦘: Saltar (Doble salto)</div>
+                <div>• Botón Habilidad: Usar poder</div>
+              </div>
             </div>
           </div>
         </div>

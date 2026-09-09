@@ -13,6 +13,7 @@ export const VirtualJoystick: React.FC<VirtualJoystickProps> = ({ onMove }) => {
   const maxRadius = 45;
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    e.stopPropagation();
     if (touchIdRef.current !== null) return;
     const touch = e.changedTouches[0];
     touchIdRef.current = touch.identifier;
@@ -21,6 +22,8 @@ export const VirtualJoystick: React.FC<VirtualJoystickProps> = ({ onMove }) => {
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (touchIdRef.current === null) return;
     for (let i = 0; i < e.changedTouches.length; i++) {
       const touch = e.changedTouches[i];
@@ -32,6 +35,7 @@ export const VirtualJoystick: React.FC<VirtualJoystickProps> = ({ onMove }) => {
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
+    e.stopPropagation();
     for (let i = 0; i < e.changedTouches.length; i++) {
       if (e.changedTouches[i].identifier === touchIdRef.current) {
         touchIdRef.current = null;
@@ -41,6 +45,29 @@ export const VirtualJoystick: React.FC<VirtualJoystickProps> = ({ onMove }) => {
         break;
       }
     }
+  };
+
+  // Mouse fallback for testing mobile controls on desktop
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setActive(true);
+    updatePosition(e.clientX, e.clientY);
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      moveEvent.preventDefault();
+      updatePosition(moveEvent.clientX, moveEvent.clientY);
+    };
+
+    const onMouseUp = () => {
+      setActive(false);
+      setKnobPos({ x: 0, y: 0 });
+      onMove({ x: 0, y: 0 });
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
   };
 
   const updatePosition = (clientX: number, clientY: number) => {
@@ -74,6 +101,7 @@ export const VirtualJoystick: React.FC<VirtualJoystickProps> = ({ onMove }) => {
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
       onTouchCancel={handleTouchEnd}
+      onMouseDown={handleMouseDown}
       className="relative w-32 h-32 rounded-none pixel-box-dark bg-black/60 backdrop-blur-none flex items-center justify-center select-none touch-none"
       style={{
         border: '4px solid #38bdf8',

@@ -1,11 +1,13 @@
 @import "tailwindcss";
 
 @layer base {
-  body {
+  html, body {
     font-family: 'Silkscreen', 'Press Start 2P', monospace;
     image-rendering: pixelated;
     user-select: none;
     -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    overscroll-behavior: none;
     touch-action: manipulation;
   }
 }
