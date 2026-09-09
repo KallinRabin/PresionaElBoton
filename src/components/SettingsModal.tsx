@@ -126,6 +126,36 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </button>
           </div>
 
+          {/* Nametags Visibility Toggle */}
+          <div className="flex items-center justify-between p-3 pixel-box-dark bg-zinc-900">
+            <div>
+              <div className="font-pixel-heading text-xs text-white flex items-center gap-1.5">
+                <span>🏷️</span> NOMBRES SOBRE JUGADORES
+              </div>
+              <div className="font-pixel-body text-[10px] text-zinc-400">
+                {isDetectedMobile
+                  ? 'Oculto por defecto en celular para limpiar la vista'
+                  : 'Nombres y barras flotantes en 3D'}
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                sound.playCoin();
+                const currentVal = settings.showNametags !== undefined ? settings.showNametags : !isDetectedMobile;
+                onUpdateSettings({ showNametags: !currentVal });
+              }}
+              className={`pixel-btn px-3.5 py-1.5 text-xs font-pixel-heading ${
+                (settings.showNametags !== undefined ? settings.showNametags : !isDetectedMobile)
+                  ? 'pixel-box-blue bg-sky-600 text-white'
+                  : 'pixel-box-dark bg-zinc-800 text-zinc-500'
+              }`}
+            >
+              {(settings.showNametags !== undefined ? settings.showNametags : !isDetectedMobile)
+                ? 'ACTIVADO'
+                : 'OCULTO'}
+            </button>
+          </div>
+
           {/* Camera Sensitivity Stepper */}
           <div className="p-3 pixel-box-dark bg-zinc-900">
             <div className="flex items-center justify-between mb-2">

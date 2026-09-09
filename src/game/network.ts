@@ -184,7 +184,7 @@ export class NetworkManager {
     roomName: string,
     mode: MultiplayerMode,
     arenaId: ArenaId,
-    player: { name: string; classId: string; skinId: string; bannerId?: string }
+    player: { name: string; classId: string; skinId: string; bannerId?: string; device?: 'mobile' | 'pc' }
   ) {
     this.send({
       type: 'CREATE_ROOM',
@@ -195,7 +195,10 @@ export class NetworkManager {
     });
   }
 
-  public joinRoom(roomId: string, player: { name: string; classId: string; skinId: string; bannerId?: string }) {
+  public joinRoom(
+    roomId: string,
+    player: { name: string; classId: string; skinId: string; bannerId?: string; device?: 'mobile' | 'pc' }
+  ) {
     this.send({
       type: 'JOIN_ROOM',
       roomId,

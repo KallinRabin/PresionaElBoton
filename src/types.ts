@@ -139,6 +139,7 @@ export interface PlayerStats {
   classIcon: string;
   coins: number;
   rank: number;
+  device?: 'mobile' | 'pc';
   
   // Smash Mechanics
   damagePercent: number; // Starts at 0%, goes up with hits
@@ -200,6 +201,7 @@ export interface MatchResult {
     damagePercent: number;
     isPlayer: boolean;
     classIcon: string;
+    device?: 'mobile' | 'pc';
   }>;
 }
 
@@ -213,6 +215,7 @@ export interface GameSettings {
   cameraSensitivity: number;
   pixelResolutionScale: number; // 1 = standard, 0.65 = ultra retro
   controlMode?: ControlMode;
+  showNametags?: boolean; // Toggle overhead player nametags in 3D
 }
 
 export type ArenaId = 'arcade_core' | 'magma_volcano' | 'cyber_space' | 'void_citadel';
@@ -258,6 +261,7 @@ export interface RoomPlayer {
   isHost: boolean;
   isReady: boolean;
   ping?: number;
+  device?: 'mobile' | 'pc';
 }
 
 export interface RoomInfo {

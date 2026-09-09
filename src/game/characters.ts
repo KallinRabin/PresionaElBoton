@@ -26,6 +26,7 @@ export class Character3D {
   private gloveMesh!: THREE.Group;
   private reflectShieldMesh!: THREE.Mesh;
   private nameplateSprite!: THREE.Sprite;
+  public iceBlockMesh!: THREE.Group;
 
   // Combat Attacker Tracking
   public lastAttacker: Character3D | null = null;
@@ -78,6 +79,16 @@ export class Character3D {
     this.abilityCastType = type;
   }
 
+  // Overhead Nametag Visibility
+  public showNametag: boolean = true;
+
+  public setNameplateVisible(visible: boolean) {
+    this.showNametag = visible;
+    if (this.nameplateSprite) {
+      this.nameplateSprite.visible = visible;
+    }
+  }
+
   constructor(
     isPlayer: boolean,
     skin: CharacterSkin,
@@ -85,7 +96,9 @@ export class Character3D {
     name: string,
     particles: ParticleSystem3D,
     networkId?: string,
-    team?: 'red' | 'blue'
+    team?: 'red' | 'blue',
+    device?: 'mobile' | 'pc',
+    showNametag: boolean = true
   ) {
     this.isPlayer = isPlayer;
     this.skin = skin;
@@ -93,6 +106,7 @@ export class Character3D {
     this.particles = particles;
     this.networkId = networkId;
     this.team = team;
+    this.showNametag = showNametag;
     this.group = new THREE.Group();
 
     const selectedClass = PLAYER_CLASSES.find((c) => c.id === classId) || PLAYER_CLASSES[0];
@@ -107,6 +121,7 @@ export class Character3D {
       classIcon: selectedClass.icon,
       coins: 0,
       rank: 1,
+      device: device || 'pc',
       damagePercent: 0,
       stocks: 3,
       kosDone: 0,
@@ -1829,11 +1844,12 @@ export class Character3D {
     this.nameplateSprite = new THREE.Sprite(spriteMat);
     this.nameplateSprite.scale.set(1.6, 0.44, 1);
     this.nameplateSprite.position.y = 2.1;
+    this.nameplateSprite.visible = this.showNametag;
     this.group.add(this.nameplateSprite);
   }
 
   public updateNameplate() {
-    if (!this.nameplateSprite.material.map) return;
+    if (!this.showNametag || !this.nameplateSprite.material.map) return;
     const canvas = this.nameplateSprite.material.map.image as HTMLCanvasElement;
     if (!canvas || typeof canvas.getContext !== 'function') return;
     const ctx = canvas.getContext('2d');
@@ -1859,7 +1875,8 @@ export class Character3D {
     ctx.textBaseline = 'top';
     ctx.fillStyle = this.team === 'red' ? '#fca5a5' : this.team === 'blue' ? '#93c5fd' : this.isPlayer ? '#38bdf8' : '#e4e4e7';
     const teamTag = this.team === 'red' ? '🔴 ' : this.team === 'blue' ? '🔵 ' : '';
-    ctx.fillText(`${teamTag}${this.stats.classIcon} ${this.stats.name.substring(0, 9)}`, 6, 6);
+    const deviceTag = this.stats.device === 'mobile' ? ' 📱' : ' 💻';
+    ctx.fillText(`${teamTag}${this.stats.classIcon} ${this.stats.name.substring(0, 8)}${deviceTag}`, 6, 6);
 
     // 3. Smash Damage %
     const dmg = Math.round(this.stats.damagePercent);

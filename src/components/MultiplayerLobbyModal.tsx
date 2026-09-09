@@ -3,6 +3,7 @@ import { RoomInfo, MultiplayerMode, ArenaId, CharacterSkin, ClassId } from '../t
 import { ARENAS } from '../data/arenas';
 import { sound } from '../game/audio';
 import { networkManager } from '../game/network';
+import { detectIsMobile } from '../utils/device';
 
 interface MultiplayerLobbyModalProps {
   playerName: string;
@@ -78,19 +79,23 @@ export const MultiplayerLobbyModal: React.FC<MultiplayerLobbyModalProps> = ({
     if (!newRoomName.trim()) return;
 
     sound.playButtonSlam();
+    const isMobile = detectIsMobile();
     networkManager.createRoom(newRoomName, newRoomMode, newRoomArena, {
       name: playerName || 'JUGADOR',
       classId: selectedClassId,
       skinId: selectedSkin.id,
+      device: isMobile ? 'mobile' : 'pc',
     });
   };
 
   const handleJoinRoom = (roomId: string) => {
     sound.playButtonSlam();
+    const isMobile = detectIsMobile();
     networkManager.joinRoom(roomId, {
       name: playerName || 'JUGADOR',
       classId: selectedClassId,
       skinId: selectedSkin.id,
+      device: isMobile ? 'mobile' : 'pc',
     });
   };
 
@@ -229,7 +234,12 @@ export const MultiplayerLobbyModal: React.FC<MultiplayerLobbyModalProps> = ({
                             <span>•</span>
                             <span style={{ color: arenaDef.themeColor }}>{arenaDef.name}</span>
                             <span>•</span>
-                            <span>Anfitrión: <strong>{room.hostName}</strong></span>
+                            <span className="flex items-center gap-1">
+                              Anfitrión: <strong>{room.hostName}</strong>
+                              <span>
+                                {room.players?.find((p) => p.isHost || p.id === room.hostId)?.device === 'mobile' ? '📱' : '💻'}
+                              </span>
+                            </span>
                           </div>
                         </div>
                       </div>

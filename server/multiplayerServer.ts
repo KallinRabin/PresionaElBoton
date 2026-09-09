@@ -22,6 +22,7 @@ export interface RoomPlayer {
   team?: PlayerTeam;
   isHost: boolean;
   isReady: boolean;
+  device?: 'mobile' | 'pc';
   ws?: WebSocket;
 }
 
@@ -84,6 +85,7 @@ function getPublicRoomInfo(room: Room) {
       team: p.team,
       isHost: p.isHost,
       isReady: p.isReady,
+      device: p.device || 'pc',
     });
   });
 
@@ -292,6 +294,7 @@ wss.on('connection', (ws: WebSocket) => {
           team: mode === '2v2' ? 'red' : undefined,
           isHost: true,
           isReady: true,
+          device: player.device || 'pc',
           ws,
         };
 
@@ -366,6 +369,7 @@ wss.on('connection', (ws: WebSocket) => {
           team: assignedTeam,
           isHost: false,
           isReady: false,
+          device: player.device || 'pc',
           ws,
         };
 

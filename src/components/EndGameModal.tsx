@@ -111,10 +111,18 @@ export const EndGameModal: React.FC<EndGameModalProps> = ({
                     : 'text-zinc-300'
                 }`}
               >
-                <div className="flex items-center gap-1.5">
-                  <span className="font-bold w-4">{idx === 0 ? '👑' : `#${idx + 1}`}</span>
-                  <span>{row.classIcon}</span>
+                <div className="flex items-center gap-1.5 min-w-0 truncate">
+                  <span className="font-bold w-4 shrink-0">{idx === 0 ? '👑' : `#${idx + 1}`}</span>
+                  <span className="shrink-0">{row.classIcon}</span>
                   <span className="truncate">{row.name}</span>
+                  {row.device && (
+                    <span
+                      className="shrink-0 text-[10px]"
+                      title={row.device === 'mobile' ? 'Celular / Móvil' : 'PC'}
+                    >
+                      {row.device === 'mobile' ? '📱' : '💻'}
+                    </span>
+                  )}
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-[11px] text-red-300">{row.damagePercent}%</span>

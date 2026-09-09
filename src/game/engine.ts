@@ -88,9 +88,15 @@ export class GameEngine3D {
   private keysPressed: { [key: string]: boolean } = {};
   private joystickVector: { x: number; y: number } = { x: 0, y: 0 };
   public isMobileDevice: boolean = false;
+  public showNametags: boolean = true;
   private cameraTouchId: number | null = null;
   private lastTouchX: number = 0;
   private lastTouchY: number = 0;
+
+  public setNameplatesVisible(visible: boolean) {
+    this.showNametags = visible;
+    this.allCharacters.forEach((c) => c.setNameplateVisible(visible));
+  }
 
   // Callbacks
   public onStatsUpdate: ((playerStats: PlayerStats, allStats: PlayerStats[]) => void) | null = null;
@@ -496,6 +502,7 @@ export class GameEngine3D {
       const localRoomP = roomInfo.players.find((p) => p.id === localId);
       const finalName = (localRoomP?.name || playerName || 'JUGADOR').toUpperCase();
       const localTeam = localRoomP?.team;
+      const localDevice = localRoomP?.device || (this.isMobileDevice ? 'mobile' : 'pc');
 
       this.player = new Character3D(
         true,
@@ -504,7 +511,9 @@ export class GameEngine3D {
         finalName,
         this.particleSystem,
         localId,
-        localTeam
+        localTeam,
+        localDevice,
+        this.showNametags
       );
       attachCharEvents(this.player);
       const localSpawn = spawns && spawns[localId] !== undefined ? spawns[localId] : 0;
@@ -524,7 +533,9 @@ export class GameEngine3D {
           p.name.toUpperCase(),
           this.particleSystem,
           p.id,
-          p.team
+          p.team,
+          p.device || 'pc',
+          this.showNametags
         );
         attachCharEvents(remoteChar);
         const spawnIdx = spawns && spawns[p.id] !== undefined ? spawns[p.id] : 1;
@@ -540,7 +551,18 @@ export class GameEngine3D {
     } else {
       // SOLO OFFLINE MATCH: Create Player + 3 Bots
       const finalPlayerName = playerName.trim() ? playerName.trim().toUpperCase() : 'JUGADOR';
-      this.player = new Character3D(true, playerSkin, playerClassId, finalPlayerName, this.particleSystem);
+      const localDevice = this.isMobileDevice ? 'mobile' : 'pc';
+      this.player = new Character3D(
+        true,
+        playerSkin,
+        playerClassId,
+        finalPlayerName,
+        this.particleSystem,
+        undefined,
+        undefined,
+        localDevice,
+        this.showNametags
+      );
       attachCharEvents(this.player);
       this.player.group.position.copy(this.world.spawnPads[0]);
       this.scene.add(this.player.group);
@@ -570,7 +592,11 @@ export class GameEngine3D {
           botSkin,
           chosenClass,
           botNames[i],
-          this.particleSystem
+          this.particleSystem,
+          undefined,
+          undefined,
+          'pc',
+          this.showNametags
         );
         attachCharEvents(botChar);
         botChar.group.position.copy(this.world.spawnPads[(i + 1) % this.world.spawnPads.length]);
@@ -624,17 +650,16 @@ export class GameEngine3D {
         this.scene.remove(remoteChar.group);
         this.particleSystem.createSmashBlast(remoteChar.group.position);
         this.particleSystem.createHitSparks(remoteChar.group.position, true);
-        sound.playRingOutBlast();
-        this.notifyBattleEvent(`❌ ${remoteChar.stats.name} abandonó la partida`, '#f87171');
+        sound.playSmashKO();
+        this.emitBattleNotification('❌', `${remoteChar.stats.name} abandonó`, 'El jugador se desconectó', '#f87171');
       }
 
       // Check remaining active players
       if (this.isMultiplayer) {
         const activeAliveChars = this.allCharacters.filter((c) => !c.stats.isEliminated);
         if (activeAliveChars.length === 1) {
-          const winner = activeAliveChars[0];
           setTimeout(() => {
-            this.handleMatchEnd(winner, '¡Todos los rivales abandonaron la batalla!');
+            this.endMatch();
           }, 800);
         }
       }
@@ -1832,6 +1857,7 @@ export class GameEngine3D {
           damagePercent: Math.round(c.stats.damagePercent),
           isPlayer: c.isPlayer,
           classIcon: c.stats.classIcon,
+          device: c.stats.device,
         })),
       });
     }

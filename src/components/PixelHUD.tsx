@@ -187,8 +187,8 @@ export const PixelHUD: React.FC<PixelHUDProps> = ({
                     {st.isEliminated ? '💀' : st.classIcon}
                   </div>
                   <div className="min-w-0 truncate">
-                    <div className={`text-[8px] sm:text-[9px] font-pixel-body truncate font-bold ${isMe ? 'text-sky-300' : 'text-zinc-300'}`}>
-                      {st.name}
+                    <div className={`text-[8px] sm:text-[9px] font-pixel-body truncate font-bold hidden sm:block ${isMe ? 'text-sky-300' : 'text-zinc-300'}`}>
+                      {st.name} {st.device === 'mobile' ? '📱' : '💻'}
                     </div>
                     <div className="text-[7px] sm:text-[8px] font-pixel-body text-zinc-400 flex items-center gap-0.5">
                       {st.stocks > 0 ? '❤️'.repeat(Math.min(3, st.stocks)) : 'ELIMINADO'}
@@ -451,6 +451,61 @@ export const PixelHUD: React.FC<PixelHUDProps> = ({
           )}
         </div>
       </div>
+
+      {/* 5. LIVE LEADERBOARD OVERLAY POPUP (Toggled by tapping 🏆 RANGO) */}
+      {showLeaderboard && (
+        <div
+          onClick={() => setShowLeaderboard(false)}
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-3 pointer-events-auto select-none"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="pixel-box-dark w-full max-w-sm p-4 border-2 border-sky-400 shadow-2xl bg-zinc-950 flex flex-col gap-3 max-h-[85vh] overflow-y-auto"
+          >
+            <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
+              <div className="font-pixel-heading text-xs text-yellow-300 flex items-center gap-1.5">
+                <span>🏆</span> TABLA DE POSICIONES EN VIVO
+              </div>
+              <button
+                onClick={() => setShowLeaderboard(false)}
+                className="pixel-btn pixel-box-red px-2 py-0.5 text-[10px] text-white"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="space-y-1.5">
+              {sortedStats.map((st, idx) => (
+                <div
+                  key={st.id}
+                  className={`p-2 border flex items-center justify-between text-xs ${
+                    st.isPlayer
+                      ? 'bg-sky-950/70 border-sky-500'
+                      : 'bg-zinc-900/80 border-zinc-700'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 min-w-0 truncate">
+                    <span className="font-pixel-heading text-[10px] text-zinc-400 w-4">#{idx + 1}</span>
+                    <span className="text-base">{st.classIcon}</span>
+                    <div className="min-w-0 truncate">
+                      <div className="font-pixel-heading text-[10px] text-white truncate flex items-center gap-1">
+                        <span>{st.name}</span>
+                        <span>{st.device === 'mobile' ? '📱' : '💻'}</span>
+                        {st.isPlayer && <span className="text-[8px] text-yellow-300 font-normal">(TÚ)</span>}
+                      </div>
+                      <div className="text-[8px] font-pixel-body text-zinc-400">
+                        {st.stocks > 0 ? '❤️'.repeat(Math.min(3, st.stocks)) : 'ELIMINADO'} • {Math.round(st.damagePercent)}% DAÑO
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0 font-pixel-heading text-[11px] text-amber-400">
+                    🪙 {st.coins}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

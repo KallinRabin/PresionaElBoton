@@ -477,6 +477,8 @@ export default function App() {
 
     engineRef.current.setParticleEffectsEnabled(settings.particlesEnabled !== false);
     engineRef.current.setCameraSensitivity(settings.cameraSensitivity || 1.0);
+    const showNames = settings.showNametags !== undefined ? settings.showNametags : !isTouchDevice;
+    engineRef.current.setNameplatesVisible(showNames);
 
     const equippedSkin = resolveEquippedSkin(selectedSkinId, selectedClassId, skins);
     const equippedButton = buttonSkins.find((b) => b.id === selectedButtonSkinId) || buttonSkins[0];
@@ -534,6 +536,8 @@ export default function App() {
 
       engineRef.current.setParticleEffectsEnabled(settings.particlesEnabled !== false);
       engineRef.current.setCameraSensitivity(settings.cameraSensitivity || 1.0);
+      const showNames = settings.showNametags !== undefined ? settings.showNametags : !isTouchDevice;
+      engineRef.current.setNameplatesVisible(showNames);
 
       const equippedSkin = resolveEquippedSkin(selectedSkinId, selectedClassId, skins);
       const equippedButton = buttonSkins.find((b) => b.id === selectedButtonSkinId) || buttonSkins[0];
@@ -600,6 +604,14 @@ export default function App() {
       setRematchVotesCount(0);
     };
   }, [handleStartMultiplayerGame]);
+
+  // Sync nametags visibility whenever setting changes
+  useEffect(() => {
+    if (engineRef.current) {
+      const showNames = settings.showNametags !== undefined ? settings.showNametags : !isTouchDevice;
+      engineRef.current.setNameplatesVisible(showNames);
+    }
+  }, [settings.showNametags, isTouchDevice]);
 
   // Pause / Resume
   const handlePause = useCallback(() => {

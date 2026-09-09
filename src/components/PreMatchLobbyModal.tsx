@@ -56,12 +56,14 @@ export const PreMatchLobbyModal: React.FC<PreMatchLobbyModalProps> = ({
                 {room.name}
               </h2>
             </div>
-            <div className="text-[9px] font-pixel-body text-zinc-400 flex items-center gap-2 mt-0.5">
+            <div className="text-[9px] font-pixel-body text-zinc-400 flex items-center gap-2 mt-0.5 flex-wrap">
               <span className="text-sky-300 font-bold">{modeLabel}</span>
               <span>•</span>
               <span style={{ color: arenaDef.themeColor }}>{arenaDef.name}</span>
               <span>•</span>
               <span>CÓDIGO: <strong className="text-white font-mono">{room.id}</strong></span>
+              <span>•</span>
+              <span className="text-emerald-400 font-bold">⚡ CROSSPLAY PC/MÓVIL</span>
             </div>
           </div>
 
@@ -101,6 +103,7 @@ export const PreMatchLobbyModal: React.FC<PreMatchLobbyModalProps> = ({
               const classDef = PLAYER_CLASSES.find((c) => c.id === p.classId) || PLAYER_CLASSES[0];
               const skinDef = INITIAL_SKINS.find((s) => s.id === p.skinId);
               const isMe = p.id === localPlayerId;
+              const isMobilePlayer = p.device === 'mobile';
 
               return (
                 <div
@@ -123,8 +126,20 @@ export const PreMatchLobbyModal: React.FC<PreMatchLobbyModalProps> = ({
                       {classDef.icon}
                     </div>
                     <div className="min-w-0">
-                      <div className="font-pixel-heading text-xs text-white truncate flex items-center gap-1.5">
+                      <div className="font-pixel-heading text-xs text-white truncate flex items-center gap-1.5 flex-wrap">
                         <span>{p.name}</span>
+                        {/* Device Badge (PC or Mobile) */}
+                        <span
+                          className={`px-1.5 py-0.2 rounded text-[7px] sm:text-[8px] font-pixel-body flex items-center gap-0.5 border ${
+                            isMobilePlayer
+                              ? 'bg-amber-950/80 border-amber-500/80 text-amber-300'
+                              : 'bg-cyan-950/80 border-cyan-500/80 text-cyan-300'
+                          }`}
+                          title={isMobilePlayer ? 'Jugador en Celular / Móvil' : 'Jugador en PC'}
+                        >
+                          <span>{isMobilePlayer ? '📱' : '💻'}</span>
+                          <span>{isMobilePlayer ? 'MÓVIL' : 'PC'}</span>
+                        </span>
                         {p.isHost && <span title="Anfitrión">👑</span>}
                         {isMe && <span className="text-[8px] text-yellow-300 font-normal">(TÚ)</span>}
                       </div>
