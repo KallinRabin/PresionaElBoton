@@ -25,10 +25,10 @@ export const EliminationModal: React.FC<EliminationModalProps> = ({
   const textColor = killerBanner ? killerBanner.textColor : '#fca5a5';
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center p-3 sm:p-6 bg-black/90 backdrop-blur-md select-none animate-pixel-fade-in">
+    <div className="fixed inset-0 z-40 flex items-center justify-center p-2.5 sm:p-6 bg-black/90 backdrop-blur-md select-none animate-pixel-fade-in overflow-y-auto">
       <div
         id="elimination-modal-container"
-        className="w-full max-w-lg pixel-box-dark bg-zinc-950 border-4 border-red-600 p-5 sm:p-7 text-white flex flex-col items-center shadow-[0_0_30px_rgba(239,68,68,0.4)]"
+        className="w-full max-w-lg max-h-[92vh] max-h-[92dvh] overflow-y-auto my-auto pixel-box-dark bg-zinc-950 border-4 border-red-600 p-4 sm:p-7 text-white flex flex-col items-center shadow-[0_0_30px_rgba(239,68,68,0.4)]"
       >
         {/* SKULL & ELIMINATION TITLE */}
         <div className="text-5xl sm:text-6xl mb-2 animate-bounce">💀</div>

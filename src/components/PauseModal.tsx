@@ -15,10 +15,10 @@ export const PauseModal: React.FC<PauseModalProps> = ({
   onOpenSettings,
 }) => {
   return (
-    <div className="fixed inset-0 z-30 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm select-none">
+    <div className="fixed inset-0 z-30 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-sm select-none overflow-y-auto">
       <div
         id="pause-modal-container"
-        className="pixel-box-dark w-full max-w-sm bg-zinc-950 p-6 text-white text-center animate-pixel-float"
+        className="pixel-box-dark w-full max-w-sm max-h-[92vh] max-h-[92dvh] overflow-y-auto my-auto bg-zinc-950 p-5 sm:p-6 text-white text-center"
       >
         <div className="text-3xl mb-2">⏸️</div>
         <h2 className="text-2xl font-pixel-heading text-yellow-400 mb-6 pixel-text-stroke">

@@ -30,10 +30,10 @@ export const EndGameModal: React.FC<EndGameModalProps> = ({
   const isVictory = result.playerRank === 1;
 
   return (
-    <div className="fixed inset-0 z-30 flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-sm select-none">
+    <div className="fixed inset-0 z-30 flex items-center justify-center p-2.5 sm:p-6 bg-black/85 backdrop-blur-sm select-none overflow-y-auto">
       <div
         id="endgame-modal-container"
-        className={`w-full max-w-xl flex flex-col p-4 sm:p-6 text-white animate-pixel-float border-4 ${
+        className={`w-full max-w-xl max-h-[92vh] max-h-[92dvh] overflow-y-auto my-auto flex flex-col p-3.5 sm:p-6 text-white border-4 ${
           isVictory
             ? 'pixel-box-gold bg-amber-950/95 border-yellow-400'
             : 'pixel-box-dark bg-zinc-950/95 border-zinc-700'

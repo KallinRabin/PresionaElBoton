@@ -74,7 +74,7 @@ export const PixelHUD: React.FC<PixelHUDProps> = ({
   };
 
   return (
-    <div className="absolute inset-0 pointer-events-none z-10 flex flex-col justify-between p-2.5 sm:p-4 select-none">
+    <div className="fixed inset-0 pointer-events-none z-10 flex flex-col justify-between p-2.5 sm:p-4 select-none">
       {/* 1. TOP BAR: Coins, Timer, Event, Rank & Pause */}
       <div className="flex flex-col gap-1.5 w-full max-w-5xl mx-auto">
         <div className="flex items-start justify-between gap-2 w-full">
@@ -330,130 +330,125 @@ export const PixelHUD: React.FC<PixelHUDProps> = ({
         </div>
       </div>
 
-      {/* 3. BOTTOM TACTICAL CONTROLS */}
-      <div className="flex items-end justify-between gap-3 w-full pointer-events-none z-10">
-        {/* LEFT: Live Battle Action Notifications Feed + Controls Hint */}
-        <div className="pointer-events-none flex flex-col items-start gap-1.5 max-w-xs sm:max-w-sm mb-1">
-          {/* BATTLE LOG / ACTION NOTIFICATIONS FEED */}
-          {battleNotifications && battleNotifications.length > 0 && (
-            <div className="flex flex-col gap-1 w-full animate-pixel-fade-in pointer-events-none mb-0.5">
-              {battleNotifications.map((notif) => (
+      {/* 3. LIVE BATTLE ACTION NOTIFICATIONS FEED (Floating independently on upper left, NEVER pushing controls) */}
+      {battleNotifications && battleNotifications.length > 0 && (
+        <div className="fixed top-24 sm:top-28 left-2.5 sm:left-4 max-w-[240px] sm:max-w-xs flex flex-col gap-1 pointer-events-none z-10 animate-pixel-fade-in">
+          {battleNotifications.map((notif) => (
+            <div
+              key={notif.id}
+              className="px-2.5 py-1.5 bg-black/90 border-l-4 flex items-center gap-2 shadow-2xl backdrop-blur-sm rounded-none animate-pixel-float"
+              style={{
+                borderColor: notif.color || '#f59e0b',
+                boxShadow: `0 0 10px ${notif.color}44`,
+              }}
+            >
+              <span className="text-base shrink-0 animate-bounce">{notif.icon}</span>
+              <div className="text-left leading-tight truncate">
                 <div
-                  key={notif.id}
-                  className="px-2.5 py-1.5 bg-black/90 border-l-4 flex items-center gap-2 shadow-2xl backdrop-blur-sm rounded-none animate-pixel-float"
-                  style={{
-                    borderColor: notif.color || '#f59e0b',
-                    boxShadow: `0 0 10px ${notif.color}44`,
-                  }}
+                  className="font-pixel-heading text-[8px] sm:text-[9px] font-bold truncate"
+                  style={{ color: notif.color }}
                 >
-                  <span className="text-base shrink-0 animate-bounce">{notif.icon}</span>
-                  <div className="text-left leading-tight truncate">
-                    <div
-                      className="font-pixel-heading text-[8px] sm:text-[9px] font-bold truncate"
-                      style={{ color: notif.color }}
-                    >
-                      {notif.text}
-                    </div>
-                    {notif.detail && (
-                      <div className="font-pixel-body text-[7px] sm:text-[8px] text-zinc-300 truncate">
-                        {notif.detail}
-                      </div>
-                    )}
-                  </div>
+                  {notif.text}
                 </div>
-              ))}
+                {notif.detail && (
+                  <div className="font-pixel-body text-[7px] sm:text-[8px] text-zinc-300 truncate">
+                    {notif.detail}
+                  </div>
+                )}
+              </div>
             </div>
-          )}
+          ))}
+        </div>
+      )}
 
-          {/* Touch Joystick on touch devices only */}
-          {isTouchDevice && (
-            <div className="pointer-events-auto">
-              <VirtualJoystick onMove={onJoystickMove} />
-            </div>
+      {/* 4. TACTICAL CONTROLS (PERMANENTLY PINNED TO BOTTOM CORNERS) */}
+      {/* BOTTOM LEFT: Touch Joystick */}
+      {isTouchDevice && (
+        <div className="fixed bottom-3 left-3 sm:bottom-5 sm:left-5 pointer-events-auto z-20 select-none">
+          <VirtualJoystick onMove={onJoystickMove} />
+        </div>
+      )}
+
+      {/* BOTTOM RIGHT: Action & Class Ability Buttons */}
+      <div className="fixed bottom-3 right-3 sm:bottom-5 sm:right-5 pointer-events-auto z-20 flex items-end gap-2 sm:gap-3 select-none">
+        {/* 1. UNIQUE CLASS SIGNATURE ABILITY BUTTON */}
+        <div className="flex flex-col items-center gap-0.5">
+          <button
+            id="hud-btn-class-ability"
+            tabIndex={-1}
+            onFocus={(e) => e.currentTarget.blur()}
+            onTouchStart={handleTouchAction(onAbility)}
+            onClick={onAbility}
+            disabled={playerStats.abilityCooldown > 0 || playerStats.isStunned}
+            className={`w-14 h-14 sm:w-16 sm:h-16 pixel-btn pixel-box-purple flex flex-col items-center justify-center relative overflow-hidden select-none ${
+              playerStats.abilityCooldown > 0 || playerStats.isStunned ? 'opacity-60 grayscale' : 'hover:scale-105 active:scale-95'
+            }`}
+          >
+            <span className="text-xl sm:text-2xl">{playerClass.ability.icon}</span>
+            <span className="font-pixel-heading text-[7px] sm:text-[8px] text-white font-bold truncate px-1">
+              {playerClass.ability.name.substring(0, 8)}
+            </span>
+
+            {/* Cooldown Overlay */}
+            {playerStats.abilityCooldown > 0 && (
+              <div className="absolute inset-0 bg-black/80 flex items-center justify-center font-pixel-heading text-xs text-yellow-300">
+                {Math.ceil(playerStats.abilityCooldown)}s
+              </div>
+            )}
+          </button>
+          {!isTouchDevice && (
+            <span className="text-[8px] sm:text-[9px] font-pixel-body text-purple-300 font-bold">[TECLA E]</span>
           )}
         </div>
 
-        {/* RIGHT: Action & Class Ability Buttons */}
-        <div className="pointer-events-auto flex items-end gap-2 sm:gap-3">
-          {/* 1. UNIQUE CLASS SIGNATURE ABILITY BUTTON */}
-          <div className="flex flex-col items-center gap-0.5">
-            <button
-              id="hud-btn-class-ability"
-              tabIndex={-1}
-              onFocus={(e) => e.currentTarget.blur()}
-              onTouchStart={handleTouchAction(onAbility)}
-              onClick={onAbility}
-              disabled={playerStats.abilityCooldown > 0 || playerStats.isStunned}
-              className={`w-14 h-14 sm:w-16 sm:h-16 pixel-btn pixel-box-purple flex flex-col items-center justify-center relative overflow-hidden select-none ${
-                playerStats.abilityCooldown > 0 || playerStats.isStunned ? 'opacity-60 grayscale' : 'hover:scale-105 active:scale-95'
-              }`}
-            >
-              <span className="text-xl sm:text-2xl">{playerClass.ability.icon}</span>
-              <span className="font-pixel-heading text-[7px] sm:text-[8px] text-white font-bold truncate px-1">
-                {playerClass.ability.name.substring(0, 8)}
-              </span>
+        {/* 2. JUMP BUTTON */}
+        <div className="flex flex-col items-center gap-0.5">
+          <button
+            id="hud-btn-jump"
+            tabIndex={-1}
+            onFocus={(e) => e.currentTarget.blur()}
+            onTouchStart={handleTouchAction(onJump)}
+            onClick={onJump}
+            disabled={playerStats.isStunned}
+            className="w-13 h-13 sm:w-15 sm:h-15 pixel-btn pixel-box-green p-2 flex flex-col items-center justify-center hover:scale-105 active:scale-95 select-none"
+          >
+            <span className="text-lg sm:text-xl">🦘</span>
+            <span className="font-pixel-heading text-[8px] text-white font-bold">SALTAR</span>
+          </button>
+          {!isTouchDevice && (
+            <span className="text-[8px] sm:text-[9px] font-pixel-body text-emerald-300 font-bold">[ESPACIO]</span>
+          )}
+        </div>
 
-              {/* Cooldown Overlay */}
-              {playerStats.abilityCooldown > 0 && (
-                <div className="absolute inset-0 bg-black/80 flex items-center justify-center font-pixel-heading text-xs text-yellow-300">
-                  {Math.ceil(playerStats.abilityCooldown)}s
-                </div>
-              )}
-            </button>
-            {!isTouchDevice && (
-              <span className="text-[8px] sm:text-[9px] font-pixel-body text-purple-300 font-bold">[TECLA E]</span>
+        {/* 3. PRIMARY STEAL GLOVE PUNCH BUTTON with custom button skin */}
+        <div className="flex flex-col items-center gap-0.5">
+          <button
+            id="hud-btn-punch"
+            tabIndex={-1}
+            onFocus={(e) => e.currentTarget.blur()}
+            onTouchStart={handleTouchAction(onPunch)}
+            onClick={onPunch}
+            disabled={playerStats.attackCooldown > 0 || playerStats.isStunned}
+            className={`w-16 h-16 sm:w-20 sm:h-20 pixel-btn flex flex-col items-center justify-center relative overflow-hidden transition-all select-none ${
+              buttonSkin?.hudGlowClass || 'pixel-box-red'
+            } ${
+              playerStats.attackCooldown > 0 || playerStats.isStunned ? 'opacity-60 grayscale' : 'hover:scale-105 active:scale-95 animate-pulse'
+            }`}
+          >
+            <span className="text-2xl sm:text-3xl">🥊</span>
+            <span className="font-pixel-heading text-[8px] sm:text-[9px] text-yellow-200 font-bold uppercase">
+              GUANTE ROBO
+            </span>
+
+            {playerStats.attackCooldown > 0 && (
+              <div className="absolute inset-0 bg-black/60 flex items-center justify-center font-pixel-heading text-xs text-red-300">
+                ...
+              </div>
             )}
-          </div>
-
-          {/* 2. JUMP BUTTON */}
-          <div className="flex flex-col items-center gap-0.5">
-            <button
-              id="hud-btn-jump"
-              tabIndex={-1}
-              onFocus={(e) => e.currentTarget.blur()}
-              onTouchStart={handleTouchAction(onJump)}
-              onClick={onJump}
-              disabled={playerStats.isStunned}
-              className="w-13 h-13 sm:w-15 sm:h-15 pixel-btn pixel-box-green p-2 flex flex-col items-center justify-center hover:scale-105 active:scale-95 select-none"
-            >
-              <span className="text-lg sm:text-xl">🦘</span>
-              <span className="font-pixel-heading text-[8px] text-white font-bold">SALTAR</span>
-            </button>
-            {!isTouchDevice && (
-              <span className="text-[8px] sm:text-[9px] font-pixel-body text-emerald-300 font-bold">[ESPACIO]</span>
-            )}
-          </div>
-
-          {/* 3. PRIMARY STEAL GLOVE PUNCH BUTTON with custom button skin */}
-          <div className="flex flex-col items-center gap-0.5">
-            <button
-              id="hud-btn-punch"
-              tabIndex={-1}
-              onFocus={(e) => e.currentTarget.blur()}
-              onTouchStart={handleTouchAction(onPunch)}
-              onClick={onPunch}
-              disabled={playerStats.attackCooldown > 0 || playerStats.isStunned}
-              className={`w-16 h-16 sm:w-20 sm:h-20 pixel-btn flex flex-col items-center justify-center relative overflow-hidden transition-all select-none ${
-                buttonSkin?.hudGlowClass || 'pixel-box-red'
-              } ${
-                playerStats.attackCooldown > 0 || playerStats.isStunned ? 'opacity-60 grayscale' : 'hover:scale-105 active:scale-95 animate-pulse'
-              }`}
-            >
-              <span className="text-2xl sm:text-3xl">🥊</span>
-              <span className="font-pixel-heading text-[8px] sm:text-[9px] text-yellow-200 font-bold uppercase">
-                GUANTE ROBO
-              </span>
-
-              {playerStats.attackCooldown > 0 && (
-                <div className="absolute inset-0 bg-black/60 flex items-center justify-center font-pixel-heading text-xs text-red-300">
-                  ...
-                </div>
-              )}
-            </button>
-            {!isTouchDevice && (
-              <span className="text-[8px] sm:text-[9px] font-pixel-body text-red-300 font-bold">[CLICK IZQ / F]</span>
-            )}
-          </div>
+          </button>
+          {!isTouchDevice && (
+            <span className="text-[8px] sm:text-[9px] font-pixel-body text-red-300 font-bold">[CLICK IZQ / F]</span>
+          )}
         </div>
       </div>
     </div>
