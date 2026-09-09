@@ -22,6 +22,9 @@ interface MainMenuProps {
   onOpenHowToPlay: () => void;
   onOpenSettings: () => void;
   onOpenMultiplayer: () => void;
+  isFullscreen?: boolean;
+  onToggleFullscreen?: () => void;
+  isMobile?: boolean;
 }
 
 export const MainMenu: React.FC<MainMenuProps> = ({
@@ -42,6 +45,9 @@ export const MainMenu: React.FC<MainMenuProps> = ({
   onOpenHowToPlay,
   onOpenSettings,
   onOpenMultiplayer,
+  isFullscreen = false,
+  onToggleFullscreen,
+  isMobile = false,
 }) => {
   const currentClass = PLAYER_CLASSES.find((c) => c.id === selectedClassId) || PLAYER_CLASSES[0];
 
@@ -137,6 +143,26 @@ export const MainMenu: React.FC<MainMenuProps> = ({
             <span>🛒</span> <span className="hidden sm:inline">TIENDA</span>
           </button>
 
+          {/* Fullscreen Button */}
+          {onToggleFullscreen && (
+            <button
+              id="menu-btn-fullscreen"
+              onClick={() => {
+                sound.playCoin();
+                onToggleFullscreen();
+              }}
+              className={`pixel-btn px-2 sm:px-2.5 py-1 text-[10px] sm:text-xs font-pixel-heading flex items-center gap-1 ${
+                isFullscreen
+                  ? 'pixel-box-green bg-emerald-600 text-white'
+                  : 'pixel-box-gold bg-amber-500 text-black animate-pulse'
+              }`}
+              title={isFullscreen ? 'Salir de pantalla completa' : 'Activar pantalla completa'}
+            >
+              <span>{isFullscreen ? '🗗' : '⛶'}</span>
+              <span className="hidden sm:inline">{isFullscreen ? 'SALIR' : 'PANTALLA'}</span>
+            </button>
+          )}
+
           <button
             id="menu-btn-settings"
             onClick={() => {
@@ -150,6 +176,33 @@ export const MainMenu: React.FC<MainMenuProps> = ({
           </button>
         </div>
       </div>
+
+      {/* MOBILE FULLSCREEN PROMPT BANNER */}
+      {isMobile && !isFullscreen && onToggleFullscreen && (
+        <div
+          id="menu-mobile-fullscreen-banner"
+          onClick={() => {
+            sound.playCoin();
+            onToggleFullscreen();
+          }}
+          className="w-full max-w-4xl pixel-btn pixel-box-gold bg-amber-500 text-black px-3 py-1.5 flex items-center justify-between gap-2 cursor-pointer shadow-xl animate-pulse shrink-0 my-1"
+        >
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-base shrink-0 animate-bounce">📱</span>
+            <div className="text-left leading-tight truncate">
+              <div className="font-pixel-heading text-[8px] sm:text-[9px] font-bold text-amber-950 uppercase">
+                PANTALLA COMPLETA
+              </div>
+              <div className="font-pixel-body text-[8px] sm:text-[9px] text-zinc-900 truncate font-semibold">
+                Toca aquí para ocultar barras del navegador y jugar al 100%
+              </div>
+            </div>
+          </div>
+          <span className="font-pixel-heading text-[8px] sm:text-[9px] bg-black text-yellow-300 px-2 py-1 border border-yellow-400 shrink-0">
+            ACTIVAR ⛶
+          </span>
+        </div>
+      )}
 
       {/* 2. CENTER CONTENT CONTAINER (Flexible, perfectly scaled) */}
       <div className="flex-1 flex flex-col items-center justify-evenly max-w-3xl w-full py-1">

@@ -20,6 +20,8 @@ interface PixelHUDProps {
   onJoystickMove: (vec: { x: number; y: number }) => void;
   onPause: () => void;
   isTouchDevice?: boolean;
+  isFullscreen?: boolean;
+  onToggleFullscreen?: () => void;
 }
 
 export const PixelHUD: React.FC<PixelHUDProps> = ({
@@ -38,6 +40,8 @@ export const PixelHUD: React.FC<PixelHUDProps> = ({
   onJoystickMove,
   onPause,
   isTouchDevice = true,
+  isFullscreen = false,
+  onToggleFullscreen,
 }) => {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
 
@@ -136,6 +140,17 @@ export const PixelHUD: React.FC<PixelHUDProps> = ({
                 <div className="text-[10px] sm:text-xs font-pixel-heading text-white">#{playerStats.rank}</div>
               </div>
             </div>
+
+            {isTouchDevice && onToggleFullscreen && (
+              <button
+                id="hud-fullscreen-btn"
+                onClick={onToggleFullscreen}
+                className="pointer-events-auto pixel-btn pixel-box-dark w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center text-white text-xs sm:text-sm hover:bg-zinc-800"
+                title={isFullscreen ? 'Salir de pantalla completa' : 'Pantalla Completa'}
+              >
+                {isFullscreen ? '🗗' : '⛶'}
+              </button>
+            )}
 
             <button
               id="hud-pause-btn"

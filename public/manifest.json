@@ -1,0 +1,16 @@
+{
+  "name": "Roba el Botón 3D - Pixel Art",
+  "short_name": "RobaBotón",
+  "start_url": "/",
+  "display": "fullscreen",
+  "orientation": "landscape-primary",
+  "background_color": "#0c0d19",
+  "theme_color": "#0c0d19",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}

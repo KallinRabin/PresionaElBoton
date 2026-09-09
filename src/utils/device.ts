@@ -47,3 +47,71 @@ export function resolveIsMobile(controlMode: ControlMode = 'auto'): boolean {
   if (controlMode === 'pc') return false;
   return detectIsMobile();
 }
+
+/**
+ * Comprueba si la ventana ya está en modo pantalla completa.
+ */
+export function isFullscreenActive(): boolean {
+  if (typeof document === 'undefined') return false;
+  const doc = document as any;
+  return !!(
+    doc.fullscreenElement ||
+    doc.webkitFullscreenElement ||
+    doc.mozFullScreenElement ||
+    doc.msFullscreenElement
+  );
+}
+
+/**
+ * Activa la pantalla completa. Debe ser invocado durante una interacción del usuario.
+ */
+export function enterFullscreen(): Promise<void> {
+  if (typeof document === 'undefined') return Promise.resolve();
+  if (isFullscreenActive()) return Promise.resolve();
+
+  const docEl = document.documentElement as any;
+  const requestMethod =
+    docEl.requestFullscreen ||
+    docEl.webkitRequestFullscreen ||
+    docEl.mozRequestFullScreen ||
+    docEl.msRequestFullscreen;
+
+  if (requestMethod) {
+    try {
+      const res = requestMethod.call(docEl);
+      if (res && typeof res.catch === 'function') {
+        return res.catch(() => {});
+      }
+    } catch (e) {
+      // Browsers block fullscreen if not within user gesture
+    }
+  }
+  return Promise.resolve();
+}
+
+/**
+ * Sale del modo pantalla completa.
+ */
+export function exitFullscreen(): Promise<void> {
+  if (typeof document === 'undefined') return Promise.resolve();
+  if (!isFullscreenActive()) return Promise.resolve();
+
+  const doc = document as any;
+  const exitMethod =
+    doc.exitFullscreen ||
+    doc.webkitExitFullscreen ||
+    doc.mozCancelFullScreen ||
+    doc.msExitFullscreen;
+
+  if (exitMethod) {
+    try {
+      const res = exitMethod.call(doc);
+      if (res && typeof res.catch === 'function') {
+        return res.catch(() => {});
+      }
+    } catch (e) {
+      // Ignored
+    }
+  }
+  return Promise.resolve();
+}

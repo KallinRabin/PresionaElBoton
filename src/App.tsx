@@ -22,6 +22,7 @@ import {
   ArenaId,
   CrazyButtonEvent,
   DailyMission,
+  RoomInfo,
 } from './types';
 import {
   INITIAL_SKINS,
@@ -47,8 +48,7 @@ import { MultiplayerLobbyModal } from './components/MultiplayerLobbyModal';
 import { PreMatchLobbyModal } from './components/PreMatchLobbyModal';
 import { sound } from './game/audio';
 import { networkManager } from './game/network';
-import { RoomInfo } from './types';
-import { resolveIsMobile } from './utils/device';
+import { resolveIsMobile, enterFullscreen, exitFullscreen, isFullscreenActive } from './utils/device';
 
 const STORAGE_KEY_COINS = 'roba_boton_coins';
 const STORAGE_KEY_SKINS = 'roba_boton_skins';
@@ -205,6 +205,46 @@ export default function App() {
 
   // Check touch / mobile device support
   const isTouchDevice = resolveIsMobile(settings.controlMode);
+
+  // Fullscreen state & listener
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(() => isFullscreenActive());
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(isFullscreenActive());
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
+  // Automatic fullscreen on first touch in mobile
+  useEffect(() => {
+    if (!isTouchDevice) return;
+
+    const handleFirstTouch = () => {
+      enterFullscreen();
+    };
+
+    window.addEventListener('touchstart', handleFirstTouch, { passive: true });
+    window.addEventListener('pointerdown', handleFirstTouch, { passive: true });
+
+    return () => {
+      window.removeEventListener('touchstart', handleFirstTouch);
+      window.removeEventListener('pointerdown', handleFirstTouch);
+    };
+  }, [isTouchDevice]);
+
+  const handleToggleFullscreen = () => {
+    if (isFullscreenActive()) {
+      exitFullscreen();
+    } else {
+      enterFullscreen();
+    }
+  };
 
   useEffect(() => {
     engineRef.current?.setIsMobile(isTouchDevice);
@@ -453,7 +493,9 @@ export default function App() {
       selectedArenaId,
       playerName
     );
-    engineRef.current.requestPointerLock();
+    if (isTouchDevice) {
+      enterFullscreen();
+    }
     setGameState('playing');
   }, [
     selectedMode,
@@ -514,7 +556,9 @@ export default function App() {
         room,
         spawns
       );
-      engineRef.current.requestPointerLock();
+      if (isTouchDevice) {
+        enterFullscreen();
+      }
       setGameState('playing');
     },
     [
@@ -571,12 +615,16 @@ export default function App() {
     if (engineRef.current && gameState === 'paused') {
       engineRef.current.setPaused(false);
       setGameState('playing');
-      engineRef.current.requestPointerLock();
-      setTimeout(() => {
-        engineRef.current?.requestPointerLock();
-      }, 50);
+      if (isTouchDevice) {
+        enterFullscreen();
+      } else {
+        engineRef.current.requestPointerLock();
+        setTimeout(() => {
+          engineRef.current?.requestPointerLock();
+        }, 50);
+      }
     }
-  }, [gameState]);
+  }, [gameState, isTouchDevice]);
 
   // Global ESC Key Listener for Pause / Exit Menu and Modal navigation
   useEffect(() => {
@@ -731,7 +779,7 @@ export default function App() {
   const aliveSurvivorsCount = allStats.filter((c) => !c.isEliminated).length;
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-black font-pixel-body select-none">
+    <div className="relative w-screen h-screen h-[100dvh] w-[100dvw] overflow-hidden bg-black font-pixel-body select-none">
       {/* 1. THREE.JS 3D CANVAS VIEWPORT */}
       <canvas
         ref={canvasRef}
@@ -766,6 +814,9 @@ export default function App() {
           onOpenHowToPlay={() => setIsHowToPlayOpen(true)}
           onOpenSettings={() => setIsSettingsOpen(true)}
           onOpenMultiplayer={() => setIsMultiplayerLobbyOpen(true)}
+          isFullscreen={isFullscreen}
+          onToggleFullscreen={handleToggleFullscreen}
+          isMobile={isTouchDevice}
         />
       )}
 
@@ -796,6 +847,8 @@ export default function App() {
           onJoystickMove={(vec) => engineRef.current?.setJoystickMove(vec)}
           onPause={handlePause}
           isTouchDevice={isTouchDevice}
+          isFullscreen={isFullscreen}
+          onToggleFullscreen={handleToggleFullscreen}
         />
       )}
 
