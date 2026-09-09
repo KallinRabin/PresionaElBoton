@@ -669,6 +669,19 @@ export default function App() {
     handleResume,
   ]);
 
+  // Auto-pause match when leaving tab, minimizing browser, or locking phone
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden && gameState === 'playing') {
+        handlePause();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [gameState, handlePause]);
+
   const handleGoToMenu = useCallback(() => {
     if (engineRef.current) {
       if (engineRef.current.isMultiplayer) {

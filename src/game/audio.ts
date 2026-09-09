@@ -16,10 +16,12 @@ class RetroAudioSystem {
   private bgmStep: number = 0;
   private currentTrack: 'menu' | 'battle' | 'none' = 'none';
   private lastSoundTimes: Map<string, number> = new Map();
+  private isPageHidden: boolean = false;
 
   constructor() {
     if (typeof window !== 'undefined') {
       const unlockAudio = () => {
+        if (this.isPageHidden) return;
         this.initContext();
         if (this.ctx && this.ctx.state === 'suspended') {
           this.ctx.resume().catch(() => {});
@@ -30,6 +32,38 @@ class RetroAudioSystem {
       window.addEventListener('touchend', unlockAudio, { passive: true });
       window.addEventListener('keydown', unlockAudio, { passive: true });
       window.addEventListener('click', unlockAudio, { passive: true });
+
+      // Suspend audio when user switches apps, tabs, minimizes browser, or locks mobile screen
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          this.handlePageHidden();
+        } else {
+          this.handlePageVisible();
+        }
+      });
+
+      window.addEventListener('pagehide', () => {
+        this.handlePageHidden();
+      });
+
+      window.addEventListener('beforeunload', () => {
+        this.stopBGM();
+        this.ctx?.suspend().catch(() => {});
+      });
+    }
+  }
+
+  private handlePageHidden() {
+    this.isPageHidden = true;
+    if (this.ctx && this.ctx.state === 'running') {
+      this.ctx.suspend().catch(() => {});
+    }
+  }
+
+  private handlePageVisible() {
+    this.isPageHidden = false;
+    if (this.ctx && this.ctx.state === 'suspended' && this.currentTrack !== 'none' && !this.isMusicMuted) {
+      this.ctx.resume().catch(() => {});
     }
   }
 
@@ -75,18 +109,21 @@ class RetroAudioSystem {
   }
 
   private getDestination(): AudioNode | null {
+    if (this.isPageHidden) return null;
     this.initContext();
     if (!this.ctx) return null;
     return this.sfxGain || this.compressor || this.ctx.destination;
   }
 
   private getMusicDestination(): AudioNode | null {
+    if (this.isPageHidden) return null;
     this.initContext();
     if (!this.ctx) return null;
     return this.musicGain || this.compressor || this.ctx.destination;
   }
 
   private canPlaySound(name: string, cooldownMs: number = 80): boolean {
+    if (this.isPageHidden) return false;
     const now = Date.now();
     const last = this.lastSoundTimes.get(name) || 0;
     if (now - last < cooldownMs) return false;
@@ -608,11 +645,7 @@ class RetroAudioSystem {
     this.bgmStep = 0;
     this.bgmInterval = window.setInterval(() => {
       try {
-        if (this.isMusicMuted || !this.ctx) return;
-        if (this.ctx.state === 'suspended') {
-          this.ctx.resume().catch(() => {});
-          return;
-        }
+        if (this.isMusicMuted || !this.ctx || this.isPageHidden || this.ctx.state === 'suspended') return;
         const destNode = this.getMusicDestination();
         if (!destNode) return;
         const t = this.ctx.currentTime;
@@ -679,11 +712,7 @@ class RetroAudioSystem {
     this.bgmStep = 0;
     this.bgmInterval = window.setInterval(() => {
       try {
-        if (this.isMusicMuted || !this.ctx) return;
-        if (this.ctx.state === 'suspended') {
-          this.ctx.resume().catch(() => {});
-          return;
-        }
+        if (this.isMusicMuted || !this.ctx || this.isPageHidden || this.ctx.state === 'suspended') return;
         const destNode = this.getMusicDestination();
         if (!destNode) return;
         const t = this.ctx.currentTime;
